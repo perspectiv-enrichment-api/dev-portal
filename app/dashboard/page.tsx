@@ -1,181 +1,261 @@
-'use client'
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import Link from 'next/link'
-import { getAnalytics, mockDeveloper, mockAPIKeys, tierLimits } from '@/lib/mock-data'
-import { TrendingUp, Key, AlertCircle, Activity } from 'lucide-react'
+import { useState } from "react";
+import { mockProjects } from "@/lib/mock-data";
+import { ProjectLogo } from "@/components/project-logo";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import Image from "next/image";
+import {
+  Trash2,
+  Pencil,
+  SlidersHorizontal,
+  Search,
+  Plus,
+  ListFilter,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { CreateProjectDialog } from "@/components/create-project-dialog";
+
+const PAGE_SIZE = 10;
+
+const orbitingLogos = [
+  {
+    src: "https://logo.clearbit.com/grammarly.com",
+    alt: "Grammarly",
+    style: "top-[8%] left-[38%]",
+  },
+  {
+    src: "https://logo.clearbit.com/apple.com",
+    alt: "Apple",
+    style: "top-[8%] right-[30%]",
+  },
+  {
+    src: "https://logo.clearbit.com/snapchat.com",
+    alt: "Snapchat",
+    style: "top-[38%] left-[28%]",
+  },
+  {
+    src: "https://logo.clearbit.com/cashapp.com",
+    alt: "Cash App",
+    style: "top-[42%] left-[14%]",
+  },
+  {
+    src: "https://logo.clearbit.com/easypaisa.com.pk",
+    alt: "eP",
+    style: "top-[18%] right-[14%]",
+  },
+  {
+    src: "https://logo.clearbit.com/yahoo.com",
+    alt: "Yahoo",
+    style: "top-[42%] right-[22%]",
+  },
+];
 
 export default function DashboardPage() {
-  const analytics = getAnalytics()
-  const tierLimit = tierLimits[mockDeveloper.plan]
+  const [search, setSearch] = useState("");
+  const [hasProjects, setHasProjects] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
-  const monthProgress = (analytics.totalRequests / (tierLimit.requestsPerMonth as number)) * 100
+  const filtered = mockProjects.filter((p) =>
+    p.name.toLowerCase().includes(search.toLowerCase()),
+  );
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-8">
+    <div className="flex flex-col h-full">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">Welcome back, Alex</h1>
-        <p className="text-muted-foreground">Here&apos;s what&apos;s happening with your API today.</p>
+      <div className="px-8 py-6 border-b border-neutral-200 flex items-center justify-between bg-white z-50">
+        <h1 className="text-xl font-semibold text-neutral-900">Projects</h1>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setHasProjects((v) => !v)}
+            className="text-xs text-neutral-400 hover:text-neutral-600 underline underline-offset-2"
+          >
+            {hasProjects ? "Show empty state" : "Show projects"}
+          </button>
+          {hasProjects && (
+            <>
+              {" "}
+              <Button
+                className="bg-neutral-900 hover:bg-neutral-800 text-white gap-1.5"
+                iconLeading={<Plus className="w-4 h-4" />}
+                onClick={() => setDialogOpen(true)}
+              >
+                New Project
+              </Button>
+              <CreateProjectDialog
+                open={dialogOpen}
+                onOpenChange={setDialogOpen}
+              />
+            </>
+          )}
+        </div>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-card/50 backdrop-blur border-border">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">This Month</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-accent mb-2">{analytics.totalRequests.toLocaleString()}</div>
-            <div className="text-xs text-muted-foreground">API requests</div>
-          </CardContent>
-        </Card>
+      {!hasProjects ? (
+        <div className="flex-1 flex items-center justify-center">
+          <div
+            className="relative flex flex-col items-center"
+            style={{ width: 1200, height: 620 }}
+          >
+            <Image
+              src="/images/empty-state.svg"
+              alt="No projects"
+              width={981}
+              height={620}
+              className="fixed top-[6%]"
+            />
 
-        <Card className="bg-card/50 backdrop-blur border-border">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Success Rate</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-accent mb-2">{analytics.successRate}%</div>
-            <div className="text-xs text-muted-foreground">{analytics.successfulRequests} successful</div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card/50 backdrop-blur border-border">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Avg Latency</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-accent mb-2">{analytics.averageLatency}ms</div>
-            <div className="text-xs text-muted-foreground">Response time</div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card/50 backdrop-blur border-border">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Active Keys</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-accent mb-2">{mockAPIKeys.filter((k) => k.status === 'active').length}</div>
-            <div className="text-xs text-muted-foreground">API keys</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Usage Progress */}
-      <Card className="bg-card/50 backdrop-blur border-border">
-        <CardHeader>
-          <CardTitle>Monthly Usage</CardTitle>
-          <CardDescription>API calls this month</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-foreground">{analytics.totalRequests.toLocaleString()} / {(tierLimit.requestsPerMonth as number).toLocaleString()} requests</span>
-              <span className="text-muted-foreground">{monthProgress.toFixed(1)}%</span>
+            <div className="absolute -mt-[20px] left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 text-center w-80 bg-white z-10 pt-6 w-full">
+              <h2 className="text-[30px]/[44px] tracking-[-2%] font-bold text-neutral-900">
+                Create your first project!
+              </h2>
+              <span className="text-[16px]/[30px] text-neutral-600 tracking-[0%]">
+                Create a project to access your API keys and start using
+                Perspectiv in your product.
+              </span>
+              <Button
+                size={"lg"}
+                className="bg-neutral-900 hover:bg-neutral-800 text-white px-6"
+                onClick={() => setHasProjects(true)}
+              >
+                Get started
+              </Button>
             </div>
-            <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
-              <div
-                className="bg-accent h-full transition-all rounded-full"
-                style={{ width: `${Math.min(monthProgress, 100)}%` }}
+          </div>
+        </div>
+      ) : (
+        <div className="p-8 flex flex-col gap-4">
+          {/* Toolbar */}
+          <div className="flex items-center justify-between">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 text-neutral-600 font-semibold h-10"
+              iconLeading={<ListFilter className="w-3.5 h-3.5 font-semibold" />}
+            >
+              Filter
+            </Button>
+            <div className="relative w-125">
+              <Search className="absolute left-3 top-[50%] -translate-y-1/2 w-4 h-4 text-neutral-400" />
+              <Input
+                placeholder="Search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-8 h-10 text-sm"
               />
             </div>
           </div>
-          {monthProgress > 80 && (
-            <div className="flex gap-3 p-3 bg-destructive/10 rounded-lg border border-destructive/20">
-              <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
-              <div className="text-sm">
-                <p className="font-medium text-destructive">Approaching limit</p>
-                <p className="text-muted-foreground">You&apos;re using {monthProgress.toFixed(0)}% of your monthly quota.</p>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
-      {/* Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Top Merchants */}
-        <Card className="lg:col-span-2 bg-card/50 backdrop-blur border-border">
-          <CardHeader>
-            <CardTitle>Top Merchants</CardTitle>
-            <CardDescription>Most enriched merchants this month</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {Object.entries(analytics.merchantCounts)
-                .sort(([, a], [, b]) => (b as number) - (a as number))
-                .slice(0, 5)
-                .map(([merchant, count]) => (
-                  <div key={merchant} className="flex justify-between items-center py-2 border-b border-border last:border-0">
-                    <span className="text-foreground font-medium">{merchant}</span>
-                    <span className="text-muted-foreground">{count} requests</span>
-                  </div>
+          <div className="border border-neutral-200 rounded-lg overflow-hidden">
+            {/* Table */}
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-neutral-50 hover:bg-neutral-50">
+                  <TableHead className="px-4 text-xs text-neutral-600 font-medium">
+                    Project
+                  </TableHead>
+                  <TableHead className="text-xs text-neutral-600 font-medium">
+                    Environment
+                  </TableHead>
+                  <TableHead className="text-xs text-neutral-600 font-medium">
+                    Created on
+                  </TableHead>
+                  <TableHead className="text-xs text-neutral-600 font-medium">
+                    API Key and Secret Key
+                  </TableHead>
+                  <TableHead />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtered.map((project, i) => (
+                  <TableRow
+                    key={project.id}
+                    className={i % 2 === 0 ? "bg-neutral-50" : "bg-white"}
+                  >
+                    <TableCell className="px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <ProjectLogo
+                          name={project.name}
+                          logo={project.logo}
+                          size="sm"
+                        />
+                        <span className="text-sm font-medium text-neutral-900">
+                          {project.name}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <span
+                        className={cn(
+                          "text-xs font-medium px-2 py-0.5 rounded",
+                          project.environment === "Production"
+                            ? "text-emerald-600 bg-emerald-50"
+                            : "text-neutral-600 bg-neutral-100",
+                        )}
+                      >
+                        {project.environment}
+                      </span>
+                    </TableCell>
+                    <TableCell className="py-4 text-sm text-neutral-600">
+                      {project.createdAt}
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <div className="font-mono text-xs text-neutral-700 leading-5">
+                        <div>{project.apiKey}</div>
+                        <div>{project.secretKey}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-4 pr-4">
+                      <div className="flex items-center gap-2 justify-end">
+                        <button className="text-neutral-400 hover:text-neutral-600 transition-colors">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                        <button className="text-neutral-400 hover:text-neutral-600 transition-colors">
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
                 ))}
+              </TableBody>
+            </Table>
+
+            {/* Pagination */}
+            <div className="flex items-center justify-between px-4 py-3 border-t border-neutral-200 bg-white">
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled
+                  className="text-neutral-400"
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled
+                  className="text-neutral-400"
+                >
+                  Next
+                </Button>
+              </div>
+              <span className="text-xs text-neutral-600 font-semibold">
+                Page 1 of {Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))}
+              </span>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Plan Info */}
-        <Card className="bg-card/50 backdrop-blur border-border">
-          <CardHeader>
-            <CardTitle className="capitalize">{mockDeveloper.plan} Plan</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-3">
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Rate Limit</p>
-                <p className="font-semibold text-foreground">{(tierLimit.rateLimit as number).toLocaleString()} req/s</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Monthly Limit</p>
-                <p className="font-semibold text-foreground">{(tierLimit.requestsPerMonth as number).toLocaleString()} calls</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Billing Cycle</p>
-                <p className="font-semibold text-foreground">Monthly</p>
-              </div>
-            </div>
-            <Link href="/dashboard/settings" className="block">
-              <Button variant="outline" className="w-full">
-                Upgrade Plan
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Link href="/dashboard/keys" className="block">
-          <Card className="bg-card/50 backdrop-blur border-border hover:border-accent/50 cursor-pointer transition-colors h-full">
-            <CardContent className="pt-6">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="font-semibold text-foreground mb-1">API Keys</h3>
-                  <p className="text-sm text-muted-foreground">Manage your API keys and credentials</p>
-                </div>
-                <Key className="w-8 h-8 text-accent flex-shrink-0" />
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/dashboard/analytics" className="block">
-          <Card className="bg-card/50 backdrop-blur border-border hover:border-accent/50 cursor-pointer transition-colors h-full">
-            <CardContent className="pt-6">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="font-semibold text-foreground mb-1">Analytics</h3>
-                  <p className="text-sm text-muted-foreground">View detailed usage and performance metrics</p>
-                </div>
-                <Activity className="w-8 h-8 text-accent flex-shrink-0" />
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-      </div>
+          </div>
+        </div>
+      )}
     </div>
-  )
+  );
 }

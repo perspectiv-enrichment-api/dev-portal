@@ -1,19 +1,21 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ProjectLogo } from "@/components/project-logo";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
-import { BarChart3, Home, Key, LogOut, Menu, Settings, User, X } from "lucide-react";
+import { mockDeveloper } from "@/lib/mock-data";
+import { ProjectLogo } from "@/components/project-logo";
+import { Layers, FileText, Settings, LogOut } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import Image from "next/image";
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: Home },
-  { href: "/dashboard/keys", label: "API Keys", icon: Key },
-  { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/dashboard", label: "Projects", icon: Layers },
+  {
+    href: "/dashboard/docs",
+    label: "API Docs",
+    icon: FileText,
+    external: true,
+  },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
@@ -22,111 +24,93 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen bg-white">
       {/* Sidebar */}
-      <aside
-        className={cn(
-          "fixed inset-y-0 left-0 z-50 flex flex-col w-64 bg-sidebar border-r border-sidebar-border transition-transform duration-300 ease-in-out lg:static lg:translate-x-0",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full",
-        )}
-      >
-        <div className="h-16 flex items-center px-6 border-b border-sidebar-border">
-          <Link href="/" className="flex items-center gap-2">
-            <ProjectLogo className="w-8 h-8 rounded-lg" />
-            <span className="text-lg font-bold text-sidebar-foreground">
-              Perspectiv
-            </span>
+      <aside className="w-[280px] flex flex-col border-r border-neutral-200 bg-white shrink-0">
+        {/* Logo */}
+        <div className="h-24 flex items-center px-6">
+          <Link href="/">
+            <Image
+              src="/images/logos/logo-with-text.svg"
+              alt="Perspectiv"
+              width={170}
+              height={48}
+            />
           </Link>
         </div>
 
-        <nav className="flex-1 px-4 py-6 space-y-2">
+        {/* Nav */}
+        <nav className="flex-1 px-3 py-2 space-y-0.5">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
             return (
-              <Link key={item.href} href={item.href}>
-                <Button
-                  variant="ghost"
-                  className={cn(
-                    "w-full justify-start gap-3",
-                    isActive
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                  )}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <Icon className="w-5 h-5" />
+              <Link
+                key={item.href}
+                href={item.href}
+                target={item.external ? "_blank" : undefined}
+                className={cn(
+                  "flex items-center justify-between gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                  isActive
+                    ? "bg-neutral-100 text-neutral-900"
+                    : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900",
+                )}
+              >
+                <span className="flex items-center gap-3">
+                  <Icon className="w-4 h-4" />
                   {item.label}
-                </Button>
+                </span>
+                {item.external && (
+                  <svg
+                    className="w-3.5 h-3.5 text-neutral-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                    />
+                  </svg>
+                )}
               </Link>
             );
           })}
         </nav>
 
-        <div className="p-4 border-t border-sidebar-border">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="ghost"
-                className="w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-              >
-                <div className="w-8 h-8 rounded-full bg-sidebar-accent flex items-center justify-center text-sidebar-accent-foreground font-semibold">
-                  AJ
-                </div>
-                <div className="text-left">
-                  <div className="text-sm font-medium">Alex Johnson</div>
-                  <div className="text-xs text-muted-foreground">alex@company.com</div>
-                </div>
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-56 p-2" align="start">
-              <Button
-                variant="ghost"
-                className="w-full justify-start gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
-              >
-                <LogOut className="w-4 h-4" />
-                Logout
-              </Button>
-            </PopoverContent>
-          </Popover>
+        {/* User */}
+        <div className="p-3 border-t border-neutral-200">
+          <div className="flex items-center justify-between gap-3 px-3 py-2 rounded-md hover:bg-neutral-50 group">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-8 h-8 rounded-full bg-neutral-200 flex items-center justify-center text-xs font-semibold text-neutral-600 shrink-0">
+                {mockDeveloper.name
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")}
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-neutral-900 truncate">
+                  {mockDeveloper.name}
+                </p>
+                <p className="text-xs text-neutral-500 truncate">
+                  {mockDeveloper.email}
+                </p>
+              </div>
+            </div>
+            <button className="text-neutral-400 hover:text-neutral-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </aside>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Navigation - Mobile Only */}
-        <header className="h-16 bg-card border-b border-border flex items-center justify-between px-6 lg:hidden">
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="lg:hidden text-foreground hover:text-accent transition-colors"
-          >
-            {sidebarOpen ? (
-              <X className="w-6 h-6" />
-            ) : (
-              <Menu className="w-6 h-6" />
-            )}
-          </button>
-
-          <div className="ml-auto flex items-center gap-2">
-            <ThemeToggle />
-          </div>
-        </header>
-
-        {/* Content Area */}
-        <main className="flex-1 overflow-auto">{children}</main>
-      </div>
-
-      {/* Mobile Overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+      {/* Main */}
+      <main className="flex-1 overflow-auto">{children}</main>
     </div>
   );
 }

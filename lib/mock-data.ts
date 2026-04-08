@@ -1,3 +1,43 @@
+export interface Project {
+  id: string
+  name: string
+  logo: string
+  environment: 'Production' | 'Sandbox'
+  createdAt: string
+  apiKey: string
+  secretKey: string
+}
+
+export const mockProjects: Project[] = [
+  {
+    id: 'proj_1',
+    name: 'Apexstinct',
+    logo: 'https://logo.clearbit.com/apexstinct.com',
+    environment: 'Production',
+    createdAt: 'April 05 2026',
+    apiKey: 'pk_test_8f...7g84e6fh9i',
+    secretKey: 'sk_test_b7c...8r1i83hs4',
+  },
+  {
+    id: 'proj_2',
+    name: 'FairParts',
+    logo: 'https://logo.clearbit.com/fairparts.com',
+    environment: 'Sandbox',
+    createdAt: 'February 12 2026',
+    apiKey: 'pk_test_8f...7g84e6fh9i',
+    secretKey: 'sk_test_b7c...8r1i83hs4',
+  },
+  {
+    id: 'proj_3',
+    name: 'Fambi',
+    logo: 'https://logo.clearbit.com/fambi.com',
+    environment: 'Production',
+    createdAt: 'December 25 2025',
+    apiKey: 'pk_test_8f...7g84e6fh9i',
+    secretKey: 'sk_test_b7c...8r1i83hs4',
+  },
+]
+
 export interface Developer {
   id: string
   email: string
