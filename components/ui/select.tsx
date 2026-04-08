@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { type FC, type ReactNode, isValidElement } from 'react'
 import * as SelectPrimitive from '@radix-ui/react-select'
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from 'lucide-react'
 
@@ -101,8 +102,11 @@ function SelectLabel({
 function SelectItem({
   className,
   children,
+  icon: Icon,
   ...props
-}: React.ComponentProps<typeof SelectPrimitive.Item>) {
+}: React.ComponentProps<typeof SelectPrimitive.Item> & {
+  icon?: FC<{ className?: string }> | ReactNode
+}) {
   return (
     <SelectPrimitive.Item
       data-slot="select-item"
@@ -117,6 +121,16 @@ function SelectItem({
           <CheckIcon className="size-4" />
         </SelectPrimitive.ItemIndicator>
       </span>
+      {isValidElement(Icon) && (
+        <span className="w-[34px] h-[24px] shrink-0 overflow-hidden" style={{ borderRadius: 0 }}>
+          <span className="flex items-center justify-center w-full h-full">{Icon}</span>
+        </span>
+      )}
+      {typeof Icon === 'function' && (
+        <span className="w-[34px] h-[24px] shrink-0 overflow-hidden" style={{ borderRadius: 0 }}>
+          <Icon className="w-full h-full" style={{ borderRadius: 0, display: 'block', objectFit: 'cover' }} />
+        </span>
+      )}
       <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
     </SelectPrimitive.Item>
   )

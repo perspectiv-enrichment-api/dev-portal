@@ -13,29 +13,13 @@ import {
   Zap,
 } from "lucide-react";
 import Link from "next/link";
+import { Navbar } from "@/components/auth/auth-navbar";
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-card">
       {/* Navigation */}
-      <nav className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <ProjectLogo className="w-8 h-8" />
-            <span className="text-xl font-bold text-foreground">
-              Perspectiv
-            </span>
-          </div>
-          <div className="flex gap-4">
-            <Link href="/login">
-              <Button variant="ghost">Sign In</Button>
-            </Link>
-            <Link href="/signup">
-              <Button>Get Started</Button>
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">

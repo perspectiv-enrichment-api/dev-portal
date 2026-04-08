@@ -1,4 +1,7 @@
+"use client"
+
 import * as React from 'react'
+import { type FC, type ReactNode, isValidElement } from 'react'
 import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
 
@@ -36,24 +39,128 @@ const buttonVariants = cva(
   },
 )
 
+type IconProp = FC<{ className?: string }> | ReactNode
+
+function isReactComponent(value: unknown): value is FC<{ className?: string }> {
+  return typeof value === 'function'
+}
+
+const spinnerIcon = 'pointer-events-none size-4 shrink-0 animate-spin'
+
 function Button({
   className,
   variant,
   size,
   asChild = false,
+  isDisabled,
+  isLoading = false,
+  showTextWhileLoading = false,
+  iconLeading: IconLeading,
+  iconTrailing: IconTrailing,
+  href,
+  children,
   ...props
 }: React.ComponentProps<'button'> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean
+    isDisabled?: boolean
+    isLoading?: boolean
+    showTextWhileLoading?: boolean
+    iconLeading?: IconProp
+    iconTrailing?: IconProp
+    href?: string
   }) {
+  const disabled = isDisabled || props.disabled
+
+  if (href) {
+    return (
+      <a
+        data-slot="button"
+        href={disabled || isLoading ? undefined : href}
+        aria-disabled={disabled || isLoading}
+        className={cn(
+          buttonVariants({ variant, size, className }),
+          (disabled || isLoading) && 'pointer-events-none opacity-50',
+        )}
+      >
+        <ButtonContent
+          IconLeading={IconLeading}
+          IconTrailing={IconTrailing}
+          isLoading={isLoading}
+          showTextWhileLoading={showTextWhileLoading}
+        >
+          {children}
+        </ButtonContent>
+      </a>
+    )
+  }
+
   const Comp = asChild ? Slot : 'button'
 
   return (
     <Comp
       data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
+      disabled={disabled || isLoading}
+      className={cn(
+        buttonVariants({ variant, size, className }),
+        isLoading && 'relative',
+      )}
       {...props}
-    />
+    >
+      <ButtonContent
+        IconLeading={IconLeading}
+        IconTrailing={IconTrailing}
+        isLoading={isLoading}
+        showTextWhileLoading={showTextWhileLoading}
+      >
+        {children}
+      </ButtonContent>
+    </Comp>
+  )
+}
+
+function ButtonContent({
+  children,
+  IconLeading,
+  IconTrailing,
+  isLoading,
+  showTextWhileLoading,
+}: {
+  children?: ReactNode
+  IconLeading?: IconProp
+  IconTrailing?: IconProp
+  isLoading: boolean
+  showTextWhileLoading: boolean
+}) {
+  return (
+    <>
+      {!isLoading && isValidElement(IconLeading) && IconLeading}
+      {!isLoading && isReactComponent(IconLeading) && <IconLeading className="pointer-events-none size-4 shrink-0" />}
+
+      {isLoading && (
+        <svg
+          fill="none"
+          viewBox="0 0 20 20"
+          className={cn(spinnerIcon, !showTextWhileLoading && 'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2')}
+        >
+          <circle className="stroke-current opacity-30" cx="10" cy="10" r="8" fill="none" strokeWidth="2" />
+          <circle
+            className="origin-center animate-spin stroke-current"
+            cx="10" cy="10" r="8" fill="none"
+            strokeWidth="2" strokeDasharray="12.5 50" strokeLinecap="round"
+          />
+        </svg>
+      )}
+
+      {children && (
+        <span className={cn(isLoading && !showTextWhileLoading && 'invisible')}>
+          {children}
+        </span>
+      )}
+
+      {isValidElement(IconTrailing) && IconTrailing}
+      {isReactComponent(IconTrailing) && <IconTrailing className="pointer-events-none size-4 shrink-0" />}
+    </>
   )
 }
 
