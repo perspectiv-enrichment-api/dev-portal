@@ -3,10 +3,13 @@
 import { cn } from "@/lib/utils";
 import { mockDeveloper } from "@/lib/mock-data";
 import { ProjectLogo } from "@/components/project-logo";
-import { Layers, FileText, Settings, LogOut } from "lucide-react";
+import { Layers, FileText, Settings, LogOut, Plus } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
+import { DashboardProvider, useDashboard } from "./dashboard-context";
+import { Button } from "@/components/ui/button";
+import { CreateProjectDialog } from "@/components/create-project-dialog";
 
 const navItems = [
   { href: "/dashboard", label: "Projects", icon: Layers },
@@ -19,6 +22,44 @@ const navItems = [
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
+function DashboardHeader() {
+  const { hasProjects, setHasProjects, dialogOpen, setDialogOpen, headerContent } = useDashboard();
+
+  if (headerContent) {
+    return (
+      <div className="px-8 py-6 border-b border-neutral-200 flex items-center justify-between bg-white z-50">
+        {headerContent}
+      </div>
+    );
+  }
+
+  return (
+    <div className="px-8 py-6 border-b border-neutral-200 flex items-center justify-between bg-white z-50">
+      <h1 className="text-xl font-semibold text-neutral-900">Projects</h1>
+      <div className="flex items-center gap-3">
+        <button
+          onClick={() => setHasProjects(!hasProjects)}
+          className="text-xs text-neutral-400 hover:text-neutral-600 underline underline-offset-2"
+        >
+          {hasProjects ? "Show empty state" : "Show projects"}
+        </button>
+        {hasProjects && (
+          <>
+            <Button
+              className="bg-neutral-900 hover:bg-neutral-800 text-white gap-1.5"
+              iconLeading={<Plus className="w-4 h-4" />}
+              onClick={() => setDialogOpen(true)}
+            >
+              New Project
+            </Button>
+            <CreateProjectDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function DashboardLayout({
   children,
 }: {
@@ -27,6 +68,7 @@ export default function DashboardLayout({
   const pathname = usePathname();
 
   return (
+    <DashboardProvider>
     <div className="flex h-screen bg-white">
       {/* Sidebar */}
       <aside className="w-[280px] flex flex-col border-r border-neutral-200 bg-white shrink-0">
@@ -110,7 +152,11 @@ export default function DashboardLayout({
       </aside>
 
       {/* Main */}
-      <main className="flex-1 overflow-auto">{children}</main>
+      <main className="flex-1 overflow-auto flex flex-col">
+        <DashboardHeader />
+        {children}
+      </main>
     </div>
+    </DashboardProvider>
   );
 }
