@@ -21,39 +21,6 @@ import { useDashboard } from "./dashboard-context";
 
 const PAGE_SIZE = 10;
 
-const orbitingLogos = [
-  {
-    src: "https://logo.clearbit.com/grammarly.com",
-    alt: "Grammarly",
-    style: "top-[8%] left-[38%]",
-  },
-  {
-    src: "https://logo.clearbit.com/apple.com",
-    alt: "Apple",
-    style: "top-[8%] right-[30%]",
-  },
-  {
-    src: "https://logo.clearbit.com/snapchat.com",
-    alt: "Snapchat",
-    style: "top-[38%] left-[28%]",
-  },
-  {
-    src: "https://logo.clearbit.com/cashapp.com",
-    alt: "Cash App",
-    style: "top-[42%] left-[14%]",
-  },
-  {
-    src: "https://logo.clearbit.com/easypaisa.com.pk",
-    alt: "eP",
-    style: "top-[18%] right-[14%]",
-  },
-  {
-    src: "https://logo.clearbit.com/yahoo.com",
-    alt: "Yahoo",
-    style: "top-[42%] right-[22%]",
-  },
-];
-
 export default function DashboardPage() {
   const [search, setSearch] = useState("");
   const { hasProjects, setHasProjects } = useDashboard();
@@ -67,15 +34,15 @@ export default function DashboardPage() {
     <div className="flex flex-col flex-1">
       {!hasProjects ? (
         <div className="flex-1 flex flex-col items-center overflow-hidden">
-          <div className="relative w-full flex flex-col items-center">
+          <div className="relative w-full flex flex-col items-center px-[50px]">
             <Image
               src="/images/empty-state.svg"
               alt="No projects"
-              width={928}
-              height={380}
+              width={750}
+              height={300}
               className="w-full h-auto"
             />
-            <div className="absolute bottom-[5%] translate-y-1/4 z-10 flex flex-col items-center gap-3 text-center bg-white px-8 py-6 rounded-2xl w-full">
+            <div className="absolute bottom-[12%] translate-y-1/4 z-10 flex flex-col items-center gap-3 text-center bg-white px-8 py-6 rounded-2xl w-full">
               <h2 className="text-[30px]/[44px] tracking-[-2%] font-bold text-neutral-900">
                 Create your first project!
               </h2>
