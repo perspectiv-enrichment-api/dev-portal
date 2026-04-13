@@ -8,11 +8,15 @@ export interface Project {
   secretKey: string
 }
 
+function dicebearUrl(seed: string) {
+  return `https://api.dicebear.com/9.x/identicon/svg?rowColor=546e7a&backgroundColor=d1d4f9,ffd5dc,b6e3f4,ffdfbf&seed=${seed}`
+}
+
 export const mockProjects: Project[] = [
   {
     id: 'proj_1',
     name: 'Apexstinct',
-    logo: 'https://logo.clearbit.com/apexstinct.com',
+    logo: dicebearUrl('apexstinct-x7k2'),
     environment: 'Production',
     createdAt: 'April 05 2026',
     apiKey: 'pk_test_8f...7g84e6fh9i',
@@ -21,7 +25,7 @@ export const mockProjects: Project[] = [
   {
     id: 'proj_2',
     name: 'FairParts',
-    logo: 'https://logo.clearbit.com/fairparts.com',
+    logo: dicebearUrl('fairparts-m3p9'),
     environment: 'Sandbox',
     createdAt: 'February 12 2026',
     apiKey: 'pk_test_8f...7g84e6fh9i',
@@ -30,7 +34,7 @@ export const mockProjects: Project[] = [
   {
     id: 'proj_3',
     name: 'Fambi',
-    logo: 'https://logo.clearbit.com/fambi.com',
+    logo: dicebearUrl('fambi-q5w1'),
     environment: 'Production',
     createdAt: 'December 25 2025',
     apiKey: 'pk_test_8f...7g84e6fh9i',
@@ -45,6 +49,7 @@ export interface Developer {
   company: string
   plan: 'free' | 'starter' | 'pro' | 'enterprise'
   joinedAt: string
+  avatar?: string
 }
 
 export interface APIKey {
@@ -85,6 +90,7 @@ export const mockDeveloper: Developer = {
   company: 'TechCorp Inc',
   plan: 'pro',
   joinedAt: '2024-01-15',
+  avatar: 'https://api.dicebear.com/9.x/notionists-neutral/svg?seed=Brian',
 }
 
 // Mock API Keys

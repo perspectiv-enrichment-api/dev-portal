@@ -7,7 +7,13 @@ import { useDashboard } from "../../dashboard-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ProjectLogo } from "@/components/project-logo";
-import { Layers, ChevronRight, UploadCloud, CheckCircle } from "lucide-react";
+import {
+  Layers,
+  ChevronRight,
+  UploadCloud,
+  CheckCircle,
+  Box,
+} from "lucide-react";
 import * as ToggleGroup from "@radix-ui/react-toggle-group";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -29,7 +35,10 @@ export default function ProjectDetailPage() {
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm">
           <Layers className="w-4 h-4 text-neutral-400" />
-          <Link href="/dashboard" className="text-neutral-500 hover:text-neutral-900">
+          <Link
+            href="/dashboard"
+            className="text-neutral-500 hover:text-neutral-900"
+          >
             Projects
           </Link>
           <ChevronRight className="w-4 h-4 text-neutral-400" />
@@ -37,20 +46,24 @@ export default function ProjectDetailPage() {
         </div>
         {/* Actions */}
         <div className="flex items-center gap-3">
-          <Button variant="outline" onClick={() => router.push("/dashboard")}>
+          <Button
+            className="bg-white hover:text-primary"
+            variant="outline"
+            onClick={() => router.push("/dashboard")}
+          >
             Cancel
           </Button>
           <Button className="bg-neutral-900 hover:bg-neutral-800 text-white">
             Save changes
           </Button>
         </div>
-      </>
+      </>,
     );
     return () => setHeaderContent(null);
   }, [project.name]);
 
   return (
-    <div className="flex-1 overflow-auto divide-y divide-neutral-200">
+    <div className="flex-1 overflow-auto">
       {/* API Credentials */}
       <Section
         label="API Credentials"
@@ -79,12 +92,7 @@ export default function ProjectDetailPage() {
       {/* Project name */}
       <Section label="Project name">
         <div className="relative w-full max-w-lg">
-          <ProjectLogo
-            name={project.name}
-            logo={project.logo}
-            size="sm"
-            className="absolute left-3 top-1/2 -translate-y-1/2"
-          />
+          <Box className="absolute left-3 top-[50%] -translate-y-1/2 w-4 h-4 text-[#737373]" />
           <Input
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -103,20 +111,38 @@ export default function ProjectDetailPage() {
           <button
             className={cn(
               "flex flex-col items-center justify-center gap-2 border border-neutral-200 rounded-lg w-96 h-28 cursor-pointer transition-colors",
-              dragOver ? "bg-neutral-50 border-neutral-400" : "bg-white hover:bg-neutral-50"
+              dragOver
+                ? "bg-neutral-50 border-neutral-400"
+                : "bg-white hover:bg-neutral-50",
             )}
             onClick={() => fileInputRef.current?.click()}
-            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragOver(true);
+            }}
             onDragLeave={() => setDragOver(false)}
-            onDrop={(e) => { e.preventDefault(); setDragOver(false); }}
+            onDrop={(e) => {
+              e.preventDefault();
+              setDragOver(false);
+            }}
           >
-            <UploadCloud className="w-6 h-6 text-neutral-400" />
-            <p className="text-sm text-neutral-700">
-              <span className="font-semibold">Click to upload</span> or drag and drop
+            <div className="border border-neutral-200 rounded-lg p-1">
+              <UploadCloud className="w-5 h-5 text-[#737373]" />
+            </div>
+            <p className="text-xs">
+              <span className="text-sm font-semibold text-neutral-700">
+                Click to upload
+              </span>{" "}
+              or drag and drop
             </p>
-            <p className="text-xs text-neutral-400">PNG, JPG or GIF (max. 800×400px)</p>
+            <p className="text-xs ">PNG, JPG or GIF (max. 800×400px)</p>
           </button>
-          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" />
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+          />
         </div>
       </Section>
 
@@ -148,11 +174,13 @@ export default function ProjectDetailPage() {
                 "flex-1 flex items-center justify-center gap-2 py-2.5 text-sm transition-colors focus:outline-none",
                 status === s
                   ? "bg-neutral-100 text-neutral-900 font-semibold"
-                  : "bg-white text-neutral-500 font-medium hover:text-neutral-700"
+                  : "bg-white text-neutral-500 font-medium hover:text-neutral-700",
               )}
             >
               {s}
-              {status === s && <CheckCircle className="w-4 h-4 text-neutral-600" />}
+              {status === s && (
+                <CheckCircle className="w-4 h-4 text-neutral-600" />
+              )}
             </ToggleGroup.Item>
           ))}
         </ToggleGroup.Root>
@@ -171,7 +199,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex items-start gap-8 px-8 py-8">
+    <div className="flex items-start gap-8 px-8 py-8 border-b-2 border-neutral-100 mx-8 last:border-b-0">
       <div className="w-56 shrink-0">
         <p className="text-sm font-semibold text-neutral-900">{label}</p>
         {description && (

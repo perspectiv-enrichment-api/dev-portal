@@ -26,13 +26,8 @@ export function ProjectLogo({
         style={{ width: dim, height: dim }}
       >
         {logo ? (
-          <Image
-            src={logo}
-            alt={name}
-            width={dim}
-            height={dim}
-            className="object-contain"
-          />
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={logo} alt={name} width={dim} height={dim} className="object-contain" />
         ) : (
           <span className="text-xs font-semibold text-neutral-600">
             {name[0]}

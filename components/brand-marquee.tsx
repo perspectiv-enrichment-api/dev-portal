@@ -211,7 +211,7 @@ const shuffledBrands = shuffle(brands);
 
 export function BrandMarquee() {
   return (
-    <section className="py-20 overflow-hidden border-y border-border bg-card/30">
+    <section className="py-12 sm:py-20 overflow-hidden border-y border-border bg-card/30">
       <p className="text-center text-lg text-primary mb-8">
         Access over{" "}
         <span className="relative inline-flex items-center justify-center align-middle">

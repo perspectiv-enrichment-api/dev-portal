@@ -59,6 +59,7 @@ function Input({
   const s = sizeStyles[size]
   const resolvedDisabled = isDisabled ?? disabled
   const resolvedInvalid = isInvalid ?? (ariaInvalid === true || ariaInvalid === 'true')
+  const resolvedReadOnly = props.readOnly
 
   return (
     <div
@@ -67,7 +68,8 @@ function Input({
         'relative flex w-full items-center rounded-md border border-input bg-transparent shadow-xs transition-[color,box-shadow]',
         'focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-[3px]',
         resolvedInvalid && 'border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40',
-        resolvedDisabled && 'cursor-not-allowed opacity-50',
+        resolvedDisabled && 'cursor-not-allowed opacity-50 bg-neutral-100',
+        resolvedReadOnly && 'bg-neutral-100',
         wrapperClassName,
       )}
     >
