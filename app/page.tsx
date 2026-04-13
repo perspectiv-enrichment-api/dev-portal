@@ -255,7 +255,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className=" bg-card/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-1">
           {/* <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
@@ -291,7 +291,7 @@ export default function Home() {
               </ul>
             </div>
           </div> */}
-          <div className=" pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-muted-foreground">
+          <div className=" py-8 flex flex-col md:flex-row justify-between items-center text-sm text-muted-foreground">
             <p>&copy; 2026 Perspectiv. All rights reserved.</p>
             <div className="flex gap-6 mt-4 md:mt-0">
               <a href="#" className="hover:text-accent transition-colors">

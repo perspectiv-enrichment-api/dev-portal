@@ -94,9 +94,9 @@
   will-change: transform;
 }
 
-.animate-marquee:hover {
+/* .animate-marquee:hover {
   animation-play-state: paused;
-}
+} */
 
 @layer base {
   * {
