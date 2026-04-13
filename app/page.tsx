@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Navbar } from "@/components/auth/auth-navbar";
+import { BrandMarquee } from "@/components/brand-marquee";
 
 export default function Home() {
   return (
@@ -22,9 +23,9 @@ export default function Home() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-25">
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 text-balance">
+          <h1 className="text-4xl md:text-6xl font-bold text-primary mb-6 text-balance">
             Enrich Your Transactions with Merchant Data
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto text-balance">
@@ -33,8 +34,12 @@ export default function Home() {
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
             <Link href="/signup">
-              <Button size="lg" className="gap-2">
-                Start Free Trial <ArrowRight className="w-4 h-4" />
+              <Button
+                size="lg"
+                className="gap-2"
+                iconTrailing={<ArrowRight className="w-4 h-4" />}
+              >
+                Get Started
               </Button>
             </Link>
             <Button size="lg" variant="outline">
@@ -44,7 +49,7 @@ export default function Home() {
         </div>
 
         {/* Stats */}
-        <div className="grid md:grid-cols-4 gap-4 mb-16">
+        {/* <div className="grid md:grid-cols-4 gap-4 mb-16">
           {[
             { label: "API Calls", value: "2.5M+" },
             { label: "Active Developers", value: "5K+" },
@@ -65,10 +70,10 @@ export default function Home() {
               </CardContent>
             </Card>
           ))}
-        </div>
+        </div> */}
 
         {/* Feature Grid */}
-        <div className="grid md:grid-cols-3 gap-8 my-20">
+        {/* <div className="grid md:grid-cols-3 gap-8 my-20">
           {[
             {
               icon: <Zap className="w-8 h-8" />,
@@ -122,10 +127,10 @@ export default function Home() {
               </CardContent>
             </Card>
           ))}
-        </div>
+        </div> */}
 
         {/* Pricing Section */}
-        <div className="my-20">
+        {/* <div className="my-20">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-12 text-center">
             Simple, Transparent Pricing
           </h2>
@@ -229,10 +234,10 @@ export default function Home() {
               </Card>
             ))}
           </div>
-        </div>
+        </div> */}
 
         {/* CTA Section */}
-        <div className="bg-card rounded-lg border border-border p-12 text-center my-20">
+        {/* <div className="bg-card rounded-lg border border-border p-12 text-center my-20">
           <h2 className="text-3xl font-bold text-foreground mb-4">
             Ready to get started?
           </h2>
@@ -243,13 +248,15 @@ export default function Home() {
           <Link href="/signup">
             <Button size="lg">Create Free Account</Button>
           </Link>
-        </div>
+        </div> */}
       </section>
 
+      <BrandMarquee />
+
       {/* Footer */}
-      <footer className="border-t border-border bg-card/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
+      <footer className=" bg-card/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          {/* <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <ProjectLogo className="w-8 h-8" />
@@ -283,9 +290,9 @@ export default function Home() {
                 <li>Status</li>
               </ul>
             </div>
-          </div>
-          <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-muted-foreground">
-            <p>&copy; 2024 Perspectiv. All rights reserved.</p>
+          </div> */}
+          <div className=" pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-muted-foreground">
+            <p>&copy; 2026 Perspectiv. All rights reserved.</p>
             <div className="flex gap-6 mt-4 md:mt-0">
               <a href="#" className="hover:text-accent transition-colors">
                 Twitter
