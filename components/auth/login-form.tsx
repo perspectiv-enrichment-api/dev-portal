@@ -4,6 +4,7 @@ import { Checkbox } from "../ui/checkbox";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { SocialButton } from "../ui/social-button";
+import Link from "next/link";
 
 export const LoginForm = () => {
   return (
@@ -26,14 +27,17 @@ export const LoginForm = () => {
       </div>
 
       <div className="flex flex-col gap-3">
-        <Button
-          type="submit"
-          variant="default"
-          size="default"
-          className="w-full"
-        >
-          Sign in
-        </Button>
+        <Link href="/dashboard">
+          {" "}
+          <Button
+            type="submit"
+            variant="default"
+            size="default"
+            className="w-full"
+          >
+            Sign in
+          </Button>
+        </Link>
         <SocialButton social="google" size="lg" className="w-full bg-white">
           Sign in with Google
         </SocialButton>

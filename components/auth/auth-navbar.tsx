@@ -9,7 +9,7 @@ export const Navbar = () => {
         <div className="flex items-center gap-4">
           <ProjectLogo />
           <nav className="hidden sm:flex items-center">
-            <Button href="#" variant="link" size="default">
+            <Button href="/auth/register" variant="link" size="default">
               API Documentation
             </Button>
           </nav>
@@ -21,7 +21,7 @@ export const Navbar = () => {
             href="/auth/login"
             variant="outline"
             size="sm"
-            className="bg-white"
+            className="bg-white hover:text-primary"
           >
             Log in
           </Button>

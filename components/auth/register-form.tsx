@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from "../ui/select";
 import { countriesOptions } from "@/lib/countries";
 import { ArrowLeft } from "lucide-react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "../ui/input-otp";
+import Link from "next/link";
 
 const steps = [
   {
@@ -333,12 +334,12 @@ function StepVerify({ onBack }: { onBack: () => void }) {
         imageSrc="/images/logos/logo.svg"
       />
       <InputOTP
-        maxLength={6}
+        maxLength={4}
         value={otp}
         onChange={setOtp}
         containerClassName="justify-center gap-3"
       >
-        {Array.from({ length: 6 }).map((_, i) => (
+        {Array.from({ length: 4 }).map((_, i) => (
           <InputOTPGroup key={i}>
             <InputOTPSlot
               index={i}
@@ -348,14 +349,16 @@ function StepVerify({ onBack }: { onBack: () => void }) {
         ))}
       </InputOTP>
       <div className="flex gap-3 flex-col">
-        <Button
-          type="button"
-          variant="default"
-          size="default"
-          className="w-full"
-        >
-          Verify
-        </Button>
+        <Link href="/dashboard">
+          <Button
+            type="button"
+            variant="default"
+            size="default"
+            className="w-full"
+          >
+            Verify
+          </Button>
+        </Link>
         <Button
           iconLeading={<ArrowLeft />}
           type="button"

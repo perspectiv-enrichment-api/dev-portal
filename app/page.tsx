@@ -33,7 +33,7 @@ export default function Home() {
             merchant name. Integrate in minutes, not days.
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
-            <Link href="/signup">
+            <Link href="/auth/register">
               <Button
                 size="lg"
                 className="gap-2"
@@ -42,9 +42,16 @@ export default function Home() {
                 Get Started
               </Button>
             </Link>
-            <Button size="lg" variant="outline">
-              View Documentation
-            </Button>
+            <Link href="/auth/register">
+              {" "}
+              <Button
+                size="lg"
+                variant="outline"
+                className="hover:text-primary"
+              >
+                View Documentation
+              </Button>
+            </Link>
           </div>
         </div>
 
