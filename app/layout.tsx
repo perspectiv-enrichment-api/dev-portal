@@ -12,6 +12,23 @@ export const metadata: Metadata = {
   description:
     "Enrich your transactions with complete merchant data, logos, and details. Easy integration, powerful analytics.",
   generator: "v0.app",
+  openGraph: {
+    title: "Perspectiv - Transaction Enrichment API",
+    description:
+      "Enrich your transactions with complete merchant data, logos, and details. Easy integration, powerful analytics.",
+    url: "https://www.perspectiv.live",
+    siteName: "Perspectiv",
+    images: [
+      {
+        url: "/open_graph_image.png",
+        width: 1200,
+        height: 630,
+        alt: "Perspectiv - Transaction Enrichment API",
+      },
+    ],
+    locale: "en-US",
+    type: "website",
+  },
   icons: {
     icon: [
       {

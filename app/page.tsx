@@ -18,12 +18,12 @@ import { BrandMarquee } from "@/components/brand-marquee";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-card">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-card">
       {/* Navigation */}
       <Navbar />
 
       {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-11 md:py-25">
+      <section className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-11 md:py-25">
         <div className="text-center mb-6 sm:mb-16 ">
           <h1 className="text-4xl md:text-6xl font-bold text-primary mb-6 text-balance">
             Enrich Your Transactions with Merchant Data
