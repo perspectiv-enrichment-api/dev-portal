@@ -26,11 +26,11 @@ export default function Home() {
       <section className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-11 md:py-25">
         <div className="text-center mb-6 sm:mb-16 ">
           <h1 className="text-4xl md:text-6xl font-bold text-primary mb-6 text-balance">
-            Enrich Your Transactions with Merchant Data
+            Make transactions instantly recognizable to your users.
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto text-balance">
-            Get complete merchant logos, details, and metadata with just a
-            merchant name. Integrate in minutes, not days.
+            Perspectiv makes transaction data easy to understand by showing
+            clear merchant names, logos, and helpful details at a glance.
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
             <Link href="/auth/register">
