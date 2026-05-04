@@ -1,15 +1,54 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { mockDeveloper } from "@/lib/mock-data";
 import { ProjectLogo } from "@/components/project-logo";
 import { Layers, FileText, Settings, LogOut, Plus } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import { DashboardProvider, useDashboard } from "./dashboard-context";
 import { Button } from "@/components/ui/button";
 import { CreateProjectDialog } from "@/components/create-project-dialog";
+import { authStore } from "@/lib/auth-store";
+import { useEffect, useState } from "react";
+import type { User } from "@/lib/api";
+
+function SidebarUser() {
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    setUser(authStore.getUser());
+  }, []);
+
+  const handleLogout = () => {
+    authStore.clear();
+    router.push("/auth/login");
+  };
+
+  const initials = user?.name
+    ? user.name.split(" ").map((n) => n[0]).join("")
+    : "?";
+
+  return (
+    <div className="p-3">
+      <div className="flex items-center justify-between gap-3 px-3 py-5 border border-neutral-200 rounded-md hover:bg-neutral-50 group">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-8 h-8 rounded-full border border-primary bg-neutral-200 overflow-hidden shrink-0 flex items-center justify-center">
+            <span className="text-xs font-semibold text-neutral-600">{initials}</span>
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-neutral-900 truncate">{user?.name ?? "—"}</p>
+            <p className="text-xs text-neutral-500 truncate">{user?.email ?? "—"}</p>
+          </div>
+        </div>
+        <button onClick={handleLogout} className="text-neutral-400 group-hover:shrink-0">
+          <LogOut className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
 
 const navItems = [
   { href: "/dashboard", label: "Projects", icon: Layers },
@@ -23,13 +62,7 @@ const navItems = [
 ];
 
 function DashboardHeader() {
-  const {
-    hasProjects,
-    setHasProjects,
-    dialogOpen,
-    setDialogOpen,
-    headerContent,
-  } = useDashboard();
+  const { projects, dialogOpen, setDialogOpen, headerContent, refreshProjects } = useDashboard();
 
   if (headerContent) {
     return (
@@ -42,29 +75,22 @@ function DashboardHeader() {
   return (
     <div className="px-8 py-6 border-b border-neutral-200 flex items-center justify-between bg-white z-50">
       <h1 className="text-xl font-semibold text-neutral-900">Projects</h1>
-      <div className="flex items-center gap-3">
-        <button
-          onClick={() => setHasProjects(!hasProjects)}
-          className="text-xs text-neutral-400 hover:text-neutral-600 underline underline-offset-2"
-        >
-          {hasProjects ? "Show empty state" : "Show projects"}
-        </button>
-        {hasProjects && (
-          <>
-            <Button
-              className="bg-neutral-900 hover:bg-neutral-800 text-white gap-1.5"
-              iconLeading={<Plus className="w-4 h-4" />}
-              onClick={() => setDialogOpen(true)}
-            >
-              New Project
-            </Button>
-            <CreateProjectDialog
-              open={dialogOpen}
-              onOpenChange={setDialogOpen}
-            />
-          </>
-        )}
-      </div>
+      {projects.length > 0 && (
+        <>
+          <Button
+            className="bg-neutral-900 hover:bg-neutral-800 text-white gap-1.5"
+            iconLeading={<Plus className="w-4 h-4" />}
+            onClick={() => setDialogOpen(true)}
+          >
+            New Project
+          </Button>
+          <CreateProjectDialog
+            open={dialogOpen}
+            onOpenChange={setDialogOpen}
+            onCreated={refreshProjects}
+          />
+        </>
+      )}
     </div>
   );
 }
@@ -134,41 +160,7 @@ export default function DashboardLayout({
             })}
           </nav>
 
-          {/* User */}
-          <div className="p-3 ">
-            <div className="flex items-center justify-between gap-3 px-3 py-5 border border-neutral-200 rounded-md hover:bg-neutral-50 group">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 rounded-full border border-primary  bg-neutral-200 overflow-hidden shrink-0">
-                  {mockDeveloper.avatar ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={mockDeveloper.avatar}
-                      alt={mockDeveloper.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <span className="w-full h-full flex items-center justify-center text-xs font-semibold text-neutral-600">
-                      {mockDeveloper.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </span>
-                  )}
-                </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-neutral-900 truncate">
-                    {mockDeveloper.name}
-                  </p>
-                  <p className="text-xs text-neutral-500 truncate">
-                    {mockDeveloper.email}
-                  </p>
-                </div>
-              </div>
-              <button className="text-neutral-400   group-hover:shrink-0">
-                <LogOut className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
+          <SidebarUser />
         </aside>
 
         {/* Main */}

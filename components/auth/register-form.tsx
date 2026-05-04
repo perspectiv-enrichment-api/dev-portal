@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import React from "react";
+import { useRouter } from "next/navigation";
 
 import { AuthFooter } from "./auth-footer";
 import { AuthHeader } from "./auth-header";
@@ -12,7 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from "../ui/select";
 import { countriesOptions } from "@/lib/countries";
 import { ArrowLeft } from "lucide-react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "../ui/input-otp";
-import Link from "next/link";
+import { authApi } from "@/lib/api";
+import { authStore } from "@/lib/auth-store";
 
 const steps = [
   {
@@ -27,9 +29,29 @@ const steps = [
   },
 ];
 
+// ── Shared form state ────────────────────────────────────────────────────────
+interface FormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  country: string;
+  companyName: string;
+  websiteUrl: string;
+  companySize: string;
+  password: string;
+}
+
 // ── Step 1 ────────────────────────────────────────────────────────────────────
-function StepPersonal({ onNext }: { onNext: () => void }) {
-  const [country, setCountry] = useState("GH");
+function StepPersonal({
+  onNext,
+  data,
+  setData,
+}: {
+  onNext: () => void;
+  data: FormData;
+  setData: React.Dispatch<React.SetStateAction<FormData>>;
+}) {
+  const country = data.country || "GH";
   const selectedCountry = countriesOptions.find(
     (c) => String(c.id) === country,
   );
@@ -57,19 +79,35 @@ function StepPersonal({ onNext }: { onNext: () => void }) {
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium">First name</label>
-            <Input placeholder="Enter your first name" required />
+            <Input
+              placeholder="Enter your first name"
+              value={data.firstName}
+              onChange={(e) => setData((d) => ({ ...d, firstName: e.target.value }))}
+              required
+            />
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium">Last name</label>
-            <Input placeholder="Enter your last name" required />
+            <Input
+              placeholder="Enter your last name"
+              value={data.lastName}
+              onChange={(e) => setData((d) => ({ ...d, lastName: e.target.value }))}
+              required
+            />
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium">Email</label>
-            <Input type="email" placeholder="Enter your email" required />
+            <Input
+              type="email"
+              placeholder="Enter your email"
+              value={data.email}
+              onChange={(e) => setData((d) => ({ ...d, email: e.target.value }))}
+              required
+            />
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium">Country</label>
-            <Select value={country} onValueChange={setCountry}>
+            <Select value={country} onValueChange={(v) => setData((d) => ({ ...d, country: v }))}>
               <SelectTrigger className="w-full">
                 <span className="flex items-center gap-2">
                   {CountryIcon &&
@@ -129,9 +167,13 @@ function StepPersonal({ onNext }: { onNext: () => void }) {
 function StepCompany({
   onNext,
   onBack,
+  data,
+  setData,
 }: {
   onNext: () => void;
   onBack: () => void;
+  data: FormData;
+  setData: React.Dispatch<React.SetStateAction<FormData>>;
 }) {
   return (
     <div className="flex flex-col gap-6">
@@ -150,18 +192,27 @@ function StepCompany({
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium">Company name</label>
-            <Input placeholder="Enter your company name" required />
+            <Input
+              placeholder="Enter your company name"
+              value={data.companyName}
+              onChange={(e) => setData((d) => ({ ...d, companyName: e.target.value }))}
+              required
+            />
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium">Website URL</label>
-            <Input type="url" placeholder="Enter website link" />
+            <Input
+              type="url"
+              placeholder="Enter website link"
+              value={data.websiteUrl}
+              onChange={(e) => setData((d) => ({ ...d, websiteUrl: e.target.value }))}
+            />
           </div>
-
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium">Company size</label>
-            <Select defaultValue="1-10">
+            <Select value={data.companySize} onValueChange={(v) => setData((d) => ({ ...d, companySize: v }))}>
               <SelectTrigger className="w-full">
-                <span>1-10 employees</span>
+                <span>{data.companySize ? `${data.companySize} employees` : "Select company size"}</span>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="1-10">1-10 employees</SelectItem>
@@ -202,13 +253,19 @@ function StepCompany({
 function StepPassword({
   onNext,
   onBack,
+  data,
+  setData,
 }: {
   onNext: () => void;
   onBack: () => void;
+  data: FormData;
+  setData: React.Dispatch<React.SetStateAction<FormData>>;
 }) {
-  const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
+  const password = data.password;
   const hasMinLength = password.length >= 8;
   const hasSpecialChar = /[^a-zA-Z0-9]/.test(password);
   const mismatch = confirm.length > 0 && password !== confirm;
@@ -223,6 +280,30 @@ function StepPassword({
     { met: hasSpecialChar, label: "Must contain one special character" },
   ];
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canSubmit) return;
+    setError("");
+    setLoading(true);
+    try {
+      await authApi.register({
+        first_name: data.firstName,
+        last_name: data.lastName,
+        email: data.email,
+        country: data.country,
+        company_name: data.companyName,
+        website_url: data.websiteUrl || undefined,
+        company_size: data.companySize,
+        password,
+      });
+      onNext();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Registration failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <AuthHeader
@@ -232,11 +313,7 @@ function StepPassword({
       />
       <form
         className="flex flex-col gap-5"
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (!canSubmit) return;
-          onNext();
-        }}
+        onSubmit={handleSubmit}
       >
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
@@ -245,7 +322,7 @@ function StepPassword({
               type="password"
               placeholder="Create a password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => setData((d) => ({ ...d, password: e.target.value }))}
               required
             />
           </div>
@@ -293,14 +370,16 @@ function StepPassword({
             </div>
           ))}
         </div>
+        {error && <p className="text-sm text-destructive">{error}</p>}
         <div className="flex gap-3 flex-col">
           <Button
             type="submit"
             variant="default"
             size="default"
             className="w-full"
+            disabled={loading}
           >
-            Next
+            {loading ? "Creating account…" : "Next"}
           </Button>
           <Button
             iconLeading={<ArrowLeft />}
@@ -319,8 +398,35 @@ function StepPassword({
 }
 
 // ── Step 4 ────────────────────────────────────────────────────────────────────
-function StepVerify({ onBack }: { onBack: () => void }) {
+function StepVerify({ onBack, email }: { onBack: () => void; email: string }) {
+  const router = useRouter();
   const [otp, setOtp] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleVerify = async () => {
+    if (otp.length < 4) return;
+    setError("");
+    setLoading(true);
+    try {
+      const { user, tokens } = await authApi.verifyEmail({ email, code: otp });
+      authStore.save(tokens, user);
+      router.push("/dashboard");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Verification failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    try {
+      await authApi.resendOtp({ email });
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Could not resend code");
+    }
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <AuthHeader
@@ -328,7 +434,7 @@ function StepVerify({ onBack }: { onBack: () => void }) {
         subtitle={
           <span>
             Please enter the verification code sent to <br />
-            <b>cjaymoni@perspectiv.com</b>
+            <b>{email}</b>
           </span>
         }
         imageSrc="/images/logos/logo.svg"
@@ -348,17 +454,27 @@ function StepVerify({ onBack }: { onBack: () => void }) {
           </InputOTPGroup>
         ))}
       </InputOTP>
+      {error && <p className="text-sm text-destructive text-center">{error}</p>}
       <div className="flex gap-3 flex-col">
-        <Link href="/dashboard">
-          <Button
-            type="button"
-            variant="default"
-            size="default"
-            className="w-full"
-          >
-            Verify
-          </Button>
-        </Link>
+        <Button
+          type="button"
+          variant="default"
+          size="default"
+          className="w-full"
+          disabled={loading || otp.length < 4}
+          onClick={handleVerify}
+        >
+          {loading ? "Verifying…" : "Verify"}
+        </Button>
+        <Button
+          type="button"
+          variant="link"
+          size="default"
+          className="w-full"
+          onClick={handleResend}
+        >
+          Resend code
+        </Button>
         <Button
           iconLeading={<ArrowLeft />}
           type="button"
@@ -382,15 +498,25 @@ export const RegisterForm = ({
   step: number;
   onStepChange: (step: number) => void;
 }) => {
+  const [formData, setFormData] = useState<FormData>({
+    firstName: "",
+    lastName: "",
+    email: "",
+    country: "GH",
+    companyName: "",
+    websiteUrl: "",
+    companySize: "",
+    password: "",
+  });
   const next = () => onStepChange(step + 1);
   const back = () => onStepChange(step - 1);
 
   return (
     <>
-      {step === 0 && <StepPersonal onNext={next} />}
-      {step === 1 && <StepCompany onNext={next} onBack={back} />}
-      {step === 2 && <StepPassword onNext={next} onBack={back} />}
-      {step === 3 && <StepVerify onBack={back} />}
+      {step === 0 && <StepPersonal onNext={next} data={formData} setData={setFormData} />}
+      {step === 1 && <StepCompany onNext={next} onBack={back} data={formData} setData={setFormData} />}
+      {step === 2 && <StepPassword onNext={next} onBack={back} data={formData} setData={setFormData} />}
+      {step === 3 && <StepVerify onBack={back} email={formData.email} />}
     </>
   );
 };

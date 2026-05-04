@@ -1,10 +1,13 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { projectsApi, type Project } from "@/lib/api";
+import { authStore } from "@/lib/auth-store";
 
 type DashboardContextType = {
-  hasProjects: boolean;
-  setHasProjects: (v: boolean) => void;
+  projects: Project[];
+  loadingProjects: boolean;
+  refreshProjects: () => Promise<void>;
   dialogOpen: boolean;
   setDialogOpen: (v: boolean) => void;
   headerContent: React.ReactNode;
@@ -14,13 +17,30 @@ type DashboardContextType = {
 const DashboardContext = createContext<DashboardContextType | null>(null);
 
 export function DashboardProvider({ children }: { children: React.ReactNode }) {
-  const [hasProjects, setHasProjects] = useState(true);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loadingProjects, setLoadingProjects] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [headerContent, setHeaderContent] = useState<React.ReactNode>(null);
 
+  const refreshProjects = useCallback(async () => {
+    try {
+      const token = await authStore.token();
+      const res = await projectsApi.list(token);
+      setProjects(res.data.projects);
+    } catch {
+      setProjects([]);
+    } finally {
+      setLoadingProjects(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshProjects();
+  }, [refreshProjects]);
+
   return (
     <DashboardContext.Provider
-      value={{ hasProjects, setHasProjects, dialogOpen, setDialogOpen, headerContent, setHeaderContent }}
+      value={{ projects, loadingProjects, refreshProjects, dialogOpen, setDialogOpen, headerContent, setHeaderContent }}
     >
       {children}
     </DashboardContext.Provider>

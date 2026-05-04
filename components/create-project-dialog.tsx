@@ -18,23 +18,45 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { projectsApi } from "@/lib/api";
+import { authStore } from "@/lib/auth-store";
 
 interface CreateProjectDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onCreated?: () => void;
 }
 
 export function CreateProjectDialog({
   open,
   onOpenChange,
+  onCreated,
 }: CreateProjectDialogProps) {
   const [name, setName] = useState("");
   const [useCase, setUseCase] = useState("");
   const [environment, setEnvironment] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  function handleCreate() {
-    // TODO: handle project creation
-    onOpenChange(false);
+  const canSubmit = name.trim() && useCase && environment;
+
+  async function handleCreate() {
+    if (!canSubmit) return;
+    setError("");
+    setLoading(true);
+    try {
+      const token = await authStore.token();
+      await projectsApi.create(token, { name: name.trim(), environment, use_case: useCase });
+      setName("");
+      setUseCase("");
+      setEnvironment("");
+      onOpenChange(false);
+      onCreated?.();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to create project");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -101,6 +123,8 @@ export function CreateProjectDialog({
               </SelectContent>
             </Select>
           </div>
+
+          {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
 
         {/* Footer */}
@@ -109,16 +133,17 @@ export function CreateProjectDialog({
             variant="outline"
             className="flex-1"
             onClick={() => onOpenChange(false)}
-            size={"lg"}
+            size="lg"
           >
             Cancel
           </Button>
           <Button
             className="flex-1 bg-neutral-900 hover:bg-neutral-800 text-white"
             onClick={handleCreate}
-            size={"lg"}
+            size="lg"
+            disabled={loading || !canSubmit}
           >
-            Create Project
+            {loading ? "Creating…" : "Create Project"}
           </Button>
         </div>
       </DialogContent>
