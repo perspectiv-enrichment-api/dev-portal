@@ -69,10 +69,10 @@ function StepPersonal({
       <SocialButton
         social="google"
         size="lg"
-        className="w-full bg-white"
+        className="w-full bg-white h-9 text-sm"
         onClick={() => { window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/v1/auth/oauth/google`; }}
       >
-        Sign in with Google
+        Continue with Google
       </SocialButton>
 
       <form

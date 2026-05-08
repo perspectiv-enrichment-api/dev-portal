@@ -45,6 +45,9 @@ export const Navbar = () => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-2.5 hover:opacity-80 transition-opacity cursor-pointer outline-none">
+                  <span className="text-sm font-medium text-foreground hidden sm:block">
+                    {user.name}
+                  </span>
                   <div className="w-8 h-8 rounded-full bg-neutral-200 border border-neutral-300 overflow-hidden shrink-0">
                     <Image
                       src={dicebearUrl(user.email)}
@@ -54,14 +57,14 @@ export const Navbar = () => {
                       className="w-full h-full"
                     />
                   </div>
-                  <span className="text-sm font-medium text-foreground hidden sm:block">
-                    {user.name}
-                  </span>
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-44">
                 <DropdownMenuItem asChild>
-                  <Link href="/dashboard" className="flex items-center gap-2 cursor-pointer">
+                  <Link
+                    href="/dashboard"
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
                     <Layers className="w-4 h-4" />
                     Projects
                   </Link>
