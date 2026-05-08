@@ -13,7 +13,6 @@ import { authStore } from "@/lib/auth-store";
 import { dicebearUrl } from "@/lib/auth-store";
 import { useEffect, useState } from "react";
 import type { User } from "@/lib/api";
-import Image from "next/image";
 
 function SidebarUser() {
   const router = useRouter();
@@ -42,11 +41,18 @@ function SidebarUser() {
             />
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-medium text-neutral-900 truncate">{user?.name ?? "—"}</p>
-            <p className="text-xs text-neutral-500 truncate">{user?.email ?? "—"}</p>
+            <p className="text-sm font-medium text-neutral-900 truncate">
+              {user?.name ?? "—"}
+            </p>
+            <p className="text-xs text-neutral-500 truncate">
+              {user?.email ?? "—"}
+            </p>
           </div>
         </div>
-        <button onClick={handleLogout} className="text-neutral-400 group-hover:shrink-0 cursor-pointer">
+        <button
+          onClick={handleLogout}
+          className="text-neutral-400 group-hover:shrink-0 cursor-pointer"
+        >
           <LogOut className="w-4 h-4" />
         </button>
       </div>
@@ -66,7 +72,13 @@ const navItems = [
 ];
 
 function DashboardHeader() {
-  const { projects, dialogOpen, setDialogOpen, headerContent, refreshProjects } = useDashboard();
+  const {
+    projects,
+    dialogOpen,
+    setDialogOpen,
+    headerContent,
+    refreshProjects,
+  } = useDashboard();
 
   if (headerContent) {
     return (
