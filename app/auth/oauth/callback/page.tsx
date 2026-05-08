@@ -17,7 +17,7 @@ function OAuthCallbackHandler() {
       try {
         const user = JSON.parse(userRaw);
         authStore.save({ accessToken, refreshToken }, user);
-        router.replace("/dashboard");
+        router.replace(user.org_id ? "/dashboard" : "/auth/onboarding");
       } catch {
         router.replace("/auth/login");
       }
