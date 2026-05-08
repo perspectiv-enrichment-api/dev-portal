@@ -75,7 +75,12 @@ export const LoginForm = () => {
         >
           {loading ? "Signing in…" : "Sign in"}
         </Button>
-        <SocialButton social="google" size="lg" className="w-full bg-white">
+        <SocialButton
+          social="google"
+          size="lg"
+          className="w-full bg-white"
+          onClick={() => { window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/v1/auth/oauth/google`; }}
+        >
           Sign in with Google
         </SocialButton>
       </div>
