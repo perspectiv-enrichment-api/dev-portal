@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { authStore } from "@/lib/auth-store";
 
-export default function OAuthCallbackPage() {
+function OAuthCallbackHandler() {
   const router = useRouter();
   const params = useSearchParams();
 
@@ -26,8 +26,15 @@ export default function OAuthCallbackPage() {
     }
   }, [params, router]);
 
+  return null;
+}
+
+export default function OAuthCallbackPage() {
   return (
     <div className="flex h-screen items-center justify-center">
+      <Suspense fallback={<p className="text-muted-foreground">Signing you in…</p>}>
+        <OAuthCallbackHandler />
+      </Suspense>
       <p className="text-muted-foreground">Signing you in…</p>
     </div>
   );
