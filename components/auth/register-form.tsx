@@ -15,6 +15,7 @@ import { ArrowLeft } from "lucide-react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "../ui/input-otp";
 import { authApi } from "@/lib/api";
 import { authStore } from "@/lib/auth-store";
+import { useAuth } from "@/lib/auth-context";
 
 const steps = [
   {
@@ -405,6 +406,7 @@ function StepPassword({
 // ── Step 4 ────────────────────────────────────────────────────────────────────
 function StepVerify({ onBack, email }: { onBack: () => void; email: string }) {
   const router = useRouter();
+  const { setUser } = useAuth();
   const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -416,6 +418,7 @@ function StepVerify({ onBack, email }: { onBack: () => void; email: string }) {
     try {
       const { user, tokens } = await authApi.verifyEmail({ email, code: otp });
       authStore.save(tokens, user);
+      setUser(user);
       router.push("/dashboard");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Verification failed");

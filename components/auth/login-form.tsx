@@ -9,9 +9,11 @@ import { SocialButton } from "../ui/social-button";
 import Link from "next/link";
 import { authApi } from "@/lib/api";
 import { authStore } from "@/lib/auth-store";
+import { useAuth } from "@/lib/auth-context";
 
 export const LoginForm = () => {
   const router = useRouter();
+  const { setUser } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -24,6 +26,7 @@ export const LoginForm = () => {
     try {
       const { user, tokens } = await authApi.login({ email, password });
       authStore.save(tokens, user);
+      setUser(user);
       router.push("/dashboard");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Login failed");

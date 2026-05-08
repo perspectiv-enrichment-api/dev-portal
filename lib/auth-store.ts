@@ -6,6 +6,10 @@ const ACCESS_KEY = "pv_access";
 const REFRESH_KEY = "pv_refresh";
 const USER_KEY = "pv_user";
 
+export function dicebearUrl(seed: string) {
+  return `https://api.dicebear.com/9.x/notionists-neutral/svg?seed=${encodeURIComponent(seed)}`;
+}
+
 export const authStore = {
   save(tokens: Tokens, user: User) {
     localStorage.setItem(ACCESS_KEY, tokens.accessToken);

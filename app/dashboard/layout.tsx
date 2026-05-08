@@ -10,8 +10,10 @@ import { DashboardProvider, useDashboard } from "./dashboard-context";
 import { Button } from "@/components/ui/button";
 import { CreateProjectDialog } from "@/components/create-project-dialog";
 import { authStore } from "@/lib/auth-store";
+import { dicebearUrl } from "@/lib/auth-store";
 import { useEffect, useState } from "react";
 import type { User } from "@/lib/api";
+import Image from "next/image";
 
 function SidebarUser() {
   const router = useRouter();
@@ -26,23 +28,25 @@ function SidebarUser() {
     router.push("/auth/login");
   };
 
-  const initials = user?.name
-    ? user.name.split(" ").map((n) => n[0]).join("")
-    : "?";
-
   return (
     <div className="p-3">
       <div className="flex items-center justify-between gap-3 px-3 py-5 border border-neutral-200 rounded-md hover:bg-neutral-50 group">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-8 h-8 rounded-full border border-primary bg-neutral-200 overflow-hidden shrink-0 flex items-center justify-center">
-            <span className="text-xs font-semibold text-neutral-600">{initials}</span>
+          <div className="w-8 h-8 rounded-full border border-primary bg-neutral-200 overflow-hidden shrink-0">
+            <Image
+              src={dicebearUrl(user?.email ?? "default")}
+              alt={user?.name ?? "User"}
+              width={32}
+              height={32}
+              className="w-full h-full"
+            />
           </div>
           <div className="min-w-0">
             <p className="text-sm font-medium text-neutral-900 truncate">{user?.name ?? "—"}</p>
             <p className="text-xs text-neutral-500 truncate">{user?.email ?? "—"}</p>
           </div>
         </div>
-        <button onClick={handleLogout} className="text-neutral-400 group-hover:shrink-0">
+        <button onClick={handleLogout} className="text-neutral-400 group-hover:shrink-0 cursor-pointer">
           <LogOut className="w-4 h-4" />
         </button>
       </div>
