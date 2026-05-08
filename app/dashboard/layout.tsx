@@ -9,9 +9,9 @@ import Image from "next/image";
 import { DashboardProvider, useDashboard } from "./dashboard-context";
 import { Button } from "@/components/ui/button";
 import { CreateProjectDialog } from "@/components/create-project-dialog";
-import { authStore } from "@/lib/auth-store";
-import { dicebearUrl } from "@/lib/auth-store";
+import { authStore, dicebearUrl } from "@/lib/auth-store";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import type { User } from "@/lib/api";
 
 function SidebarUser() {
@@ -24,6 +24,7 @@ function SidebarUser() {
 
   const handleLogout = () => {
     authStore.clear();
+    toast.success("Signed out successfully");
     router.push("/auth/login");
   };
 

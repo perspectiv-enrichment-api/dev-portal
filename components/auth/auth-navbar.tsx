@@ -1,14 +1,32 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-context";
-import { dicebearUrl } from "@/lib/auth-store";
+import { authStore, dicebearUrl } from "@/lib/auth-store";
 import { ProjectLogo } from "../project-logo";
 import { Button } from "../ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { Layers, LogOut } from "lucide-react";
+import { toast } from "sonner";
 
 export const Navbar = () => {
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
+  const router = useRouter();
+
+  const handleSignOut = () => {
+    authStore.clear();
+    setUser(null);
+    toast.success("Signed out successfully");
+    router.push("/auth/login");
+  };
 
   return (
     <header className="sticky top-0 z-50 flex h-16 items-center border-b border-secondary bg-background/80 backdrop-blur">
@@ -24,18 +42,41 @@ export const Navbar = () => {
 
         <div className="flex items-center gap-2 sm:gap-3">
           {user ? (
-            <Link href="/dashboard" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
-              <div className="w-8 h-8 rounded-full bg-neutral-200 border border-neutral-300 overflow-hidden shrink-0">
-                <Image
-                  src={dicebearUrl(user.email)}
-                  alt={user.name}
-                  width={32}
-                  height={32}
-                  className="w-full h-full"
-                />
-              </div>
-              <span className="text-sm font-medium text-foreground hidden sm:block">{user.name}</span>
-            </Link>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-2.5 hover:opacity-80 transition-opacity cursor-pointer outline-none">
+                  <div className="w-8 h-8 rounded-full bg-neutral-200 border border-neutral-300 overflow-hidden shrink-0">
+                    <Image
+                      src={dicebearUrl(user.email)}
+                      alt={user.name}
+                      width={32}
+                      height={32}
+                      className="w-full h-full"
+                    />
+                  </div>
+                  <span className="text-sm font-medium text-foreground hidden sm:block">
+                    {user.name}
+                  </span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-44">
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard" className="flex items-center gap-2 cursor-pointer">
+                    <Layers className="w-4 h-4" />
+                    Projects
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  variant="destructive"
+                  className="flex items-center gap-2 cursor-pointer"
+                  onClick={handleSignOut}
+                >
+                  <LogOut className="w-4 h-4" />
+                  Sign out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <>
               <Button
