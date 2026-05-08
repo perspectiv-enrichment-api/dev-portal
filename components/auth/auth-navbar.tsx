@@ -48,7 +48,7 @@ export const Navbar = () => {
                   <span className="text-sm font-medium text-foreground hidden sm:block">
                     {user.name}
                   </span>
-                  <div className="w-8 h-8 rounded-full bg-neutral-200 border border-neutral-300 overflow-hidden shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-neutral-200 border border-black overflow-hidden shrink-0">
                     <Image
                       src={dicebearUrl(user.email)}
                       alt={user.name}
