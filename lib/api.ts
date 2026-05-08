@@ -100,7 +100,7 @@ export const authApi = {
     request<void>("/v1/auth/resend-otp", { method: "POST", body: JSON.stringify(body) }),
 
   onboarding: (token: string, body: { first_name: string; last_name: string; country: string; company_name: string; website_url?: string; company_size: string }) =>
-    request<{ data: { user: User; org: { id: string; name: string } } }>("/v1/auth/onboarding", { method: "POST", token, body: JSON.stringify(body) }),
+    request<{ data: { user: User; org: { id: string; name: string }; accessToken: string; refreshToken: string } }>("/v1/auth/onboarding", { method: "POST", token, body: JSON.stringify(body) }),
 
   refresh: (refreshToken: string) =>
     request<{ tokens: Tokens }>("/v1/auth/refresh", {

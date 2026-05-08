@@ -38,14 +38,11 @@ export default function OnboardingPage() {
         website_url: websiteUrl || undefined,
         company_size: companySize,
       });
-      // Update stored user with org_id
-      const currentUser = authStore.getUser();
-      if (currentUser) {
-        authStore.save(
-          { accessToken: await authStore.token(), refreshToken: localStorage.getItem("pv_refresh")! },
-          { ...currentUser, org_id: res.data.org.id }
-        );
-      }
+      // Save new tokens (now includes orgId in JWT)
+      authStore.save(
+        { accessToken: res.data.accessToken, refreshToken: res.data.refreshToken },
+        res.data.user
+      );
       router.replace("/dashboard");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong");
