@@ -203,9 +203,7 @@ export default function ProjectDetailPage() {
           </div>
 
           {keyError && (
-            <p className="text-sm text-destructive col-start-2">
-              {keyError}
-            </p>
+            <p className="text-sm text-destructive col-start-2">{keyError}</p>
           )}
 
           <div className="flex items-center gap-3 col-start-2">
