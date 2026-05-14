@@ -6,7 +6,7 @@ import { clearAuthStorage } from "./auth-storage";
 let didNotify = false;
 
 export const handleAuthFailure = (
-  message = "Your session expired. Please sign in again."
+  message = "Your session expired. Please sign in again.",
 ) => {
   if (typeof window === "undefined") return;
   if (!didNotify) {

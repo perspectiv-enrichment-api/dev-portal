@@ -17,7 +17,10 @@ export const readUserRaw = () => {
   return localStorage.getItem(USER_KEY);
 };
 
-export const writeTokens = (tokens: { accessToken: string; refreshToken: string }) => {
+export const writeTokens = (tokens: {
+  accessToken: string;
+  refreshToken: string;
+}) => {
   if (typeof window === "undefined") return;
   localStorage.setItem(ACCESS_KEY, tokens.accessToken);
   localStorage.setItem(REFRESH_KEY, tokens.refreshToken);

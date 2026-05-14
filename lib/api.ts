@@ -25,7 +25,7 @@ const refreshTokens = async (): Promise<Tokens | null> => {
 async function request<T>(
   path: string,
   options: RequestInit & { token?: string } = {},
-  retry = true
+  retry = true,
 ): Promise<T> {
   const { token, ...init } = options;
   const res = await fetch(`${BASE}${path}`, {
@@ -45,7 +45,11 @@ async function request<T>(
     }
     handleAuthFailure();
   }
-  if (!res.ok) throw Object.assign(new Error(data.status_message ?? data.message ?? "Request failed"), { status: res.status, data });
+  if (!res.ok)
+    throw Object.assign(
+      new Error(data.status_message ?? data.message ?? "Request failed"),
+      { status: res.status, data },
+    );
   return data as T;
 }
 
@@ -113,24 +117,82 @@ export interface UsageSummary {
 // ── Auth ─────────────────────────────────────────────────────────────────────
 
 export const authApi = {
-  register: (body: { first_name: string; last_name: string; email: string; country: string; company_name: string; website_url?: string; company_size: string; password: string }) =>
-    request<{ data: { user: User } }>("/v1/auth/register", { method: "POST", body: JSON.stringify(body) }),
+  register: (body: {
+    first_name: string;
+    last_name: string;
+    email: string;
+    country: string;
+    company_name: string;
+    website_url?: string;
+    company_size: string;
+    password: string;
+  }) =>
+    request<{ data: { user: User } }>("/v1/auth/register", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
 
-  login: async (body: { email: string; password: string }): Promise<AuthResponse> => {
-    const res = await request<{ data: { user: User; accessToken: string; refreshToken: string } }>("/v1/auth/login", { method: "POST", body: JSON.stringify(body) });
-    return { user: res.data.user, tokens: { accessToken: res.data.accessToken, refreshToken: res.data.refreshToken } };
+  login: async (body: {
+    email: string;
+    password: string;
+  }): Promise<AuthResponse> => {
+    const res = await request<{
+      data: { user: User; accessToken: string; refreshToken: string };
+    }>("/v1/auth/login", { method: "POST", body: JSON.stringify(body) });
+    return {
+      user: res.data.user,
+      tokens: {
+        accessToken: res.data.accessToken,
+        refreshToken: res.data.refreshToken,
+      },
+    };
   },
 
-  verifyEmail: async (body: { email: string; code: string }): Promise<AuthResponse> => {
-    const res = await request<{ data: { user: User; accessToken: string; refreshToken: string } }>("/v1/auth/verify-email", { method: "POST", body: JSON.stringify(body) });
-    return { user: res.data.user, tokens: { accessToken: res.data.accessToken, refreshToken: res.data.refreshToken } };
+  verifyEmail: async (body: {
+    email: string;
+    code: string;
+  }): Promise<AuthResponse> => {
+    const res = await request<{
+      data: { user: User; accessToken: string; refreshToken: string };
+    }>("/v1/auth/verify-email", { method: "POST", body: JSON.stringify(body) });
+    return {
+      user: res.data.user,
+      tokens: {
+        accessToken: res.data.accessToken,
+        refreshToken: res.data.refreshToken,
+      },
+    };
   },
 
   resendOtp: (body: { email: string }) =>
-    request<void>("/v1/auth/resend-otp", { method: "POST", body: JSON.stringify(body) }),
+    request<void>("/v1/auth/resend-otp", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
 
-  onboarding: (token: string, body: { first_name: string; last_name: string; country: string; company_name: string; website_url?: string; company_size: string }) =>
-    request<{ data: { user: User; org: { id: string; name: string }; accessToken: string; refreshToken: string } }>("/v1/auth/onboarding", { method: "POST", token, body: JSON.stringify(body) }),
+  onboarding: (
+    token: string,
+    body: {
+      first_name: string;
+      last_name: string;
+      country: string;
+      company_name: string;
+      website_url?: string;
+      company_size: string;
+    },
+  ) =>
+    request<{
+      data: {
+        user: User;
+        org: { id: string; name: string };
+        accessToken: string;
+        refreshToken: string;
+      };
+    }>("/v1/auth/onboarding", {
+      method: "POST",
+      token,
+      body: JSON.stringify(body),
+    }),
 
   refresh: async (refreshToken: string) => {
     const res = await request<{ data: Tokens }>("/v1/auth/refresh", {
@@ -147,7 +209,11 @@ export const usersApi = {
   me: (token: string) => request<{ user: User }>("/v1/users/me", { token }),
 
   update: (token: string, body: { name?: string; password?: string }) =>
-    request<{ user: User }>("/v1/users/me", { method: "PATCH", token, body: JSON.stringify(body) }),
+    request<{ user: User }>("/v1/users/me", {
+      method: "PATCH",
+      token,
+      body: JSON.stringify(body),
+    }),
 
   delete: (token: string) =>
     request<void>("/v1/users/me", { method: "DELETE", token }),
@@ -176,13 +242,41 @@ export const projectsApi = {
     request<{ data: { projects: Project[] } }>("/v1/projects", { token }),
 
   get: (token: string, projectId: string) =>
-    request<{ data: { project: Project } }>(`/v1/projects/${projectId}`, { token }),
+    request<{ data: { project: Project } }>(`/v1/projects/${projectId}`, {
+      token,
+    }),
 
-  create: (token: string, body: { name: string; environment: string; use_case: string; status?: string }) =>
-    request<{ data: { project: Project } }>("/v1/projects", { method: "POST", token, body: JSON.stringify(body) }),
+  create: (
+    token: string,
+    body: {
+      name: string;
+      environment: string;
+      use_case: string;
+      status?: string;
+    },
+  ) =>
+    request<{ data: { project: Project } }>("/v1/projects", {
+      method: "POST",
+      token,
+      body: JSON.stringify(body),
+    }),
 
-  update: (token: string, projectId: string, body: { name?: string; environment?: string; status?: string; use_case?: string; project_icon_url?: string }) =>
-    request<{ data: { project: Project } }>(`/v1/projects/${projectId}`, { method: "PATCH", token, body: JSON.stringify(body) }),
+  update: (
+    token: string,
+    projectId: string,
+    body: {
+      name?: string;
+      environment?: string;
+      status?: string;
+      use_case?: string;
+      project_icon_url?: string;
+    },
+  ) =>
+    request<{ data: { project: Project } }>(`/v1/projects/${projectId}`, {
+      method: "PATCH",
+      token,
+      body: JSON.stringify(body),
+    }),
 
   delete: (token: string, projectId: string) =>
     request<void>(`/v1/projects/${projectId}`, { method: "DELETE", token }),
@@ -191,14 +285,27 @@ export const projectsApi = {
 // ── Usage ────────────────────────────────────────────────────────────────────
 
 export const usageApi = {
-  list: (token: string, params?: { page?: number; limit?: number; from?: string; to?: string; key_id?: string }) => {
+  list: (
+    token: string,
+    params?: {
+      page?: number;
+      limit?: number;
+      from?: string;
+      to?: string;
+      key_id?: string;
+    },
+  ) => {
     const qs = new URLSearchParams(
       Object.entries(params ?? {})
         .filter(([, v]) => v !== undefined)
-        .map(([k, v]) => [k, String(v)])
+        .map(([k, v]) => [k, String(v)]),
     ).toString();
-    return request<{ logs: UsageRecord[]; total: number }>(`/v1/usage${qs ? `?${qs}` : ""}`, { token });
+    return request<{ logs: UsageRecord[]; total: number }>(
+      `/v1/usage${qs ? `?${qs}` : ""}`,
+      { token },
+    );
   },
 
-  summary: (token: string) => request<UsageSummary>("/v1/usage/summary", { token }),
+  summary: (token: string) =>
+    request<UsageSummary>("/v1/usage/summary", { token }),
 };
