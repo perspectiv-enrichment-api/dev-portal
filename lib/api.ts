@@ -1,8 +1,31 @@
+import { readRefreshToken, writeTokens } from "./auth-storage";
+import { handleAuthFailure } from "./auth-failure";
+
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+
+const refreshTokens = async (): Promise<Tokens | null> => {
+  if (typeof window === "undefined") return null;
+  const refreshToken = readRefreshToken();
+  if (!refreshToken) return null;
+
+  const res = await fetch(`${BASE}/v1/auth/refresh`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ refreshToken }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) return null;
+
+  const tokens: Tokens | undefined = data?.data ?? data?.tokens;
+  if (!tokens?.accessToken || !tokens?.refreshToken) return null;
+  writeTokens(tokens);
+  return tokens;
+};
 
 async function request<T>(
   path: string,
-  options: RequestInit & { token?: string } = {}
+  options: RequestInit & { token?: string } = {},
+  retry = true
 ): Promise<T> {
   const { token, ...init } = options;
   const res = await fetch(`${BASE}${path}`, {
@@ -15,6 +38,13 @@ async function request<T>(
   });
 
   const data = await res.json().catch(() => ({}));
+  if (res.status === 401 && retry && token) {
+    const tokens = await refreshTokens();
+    if (tokens) {
+      return request(path, { ...options, token: tokens.accessToken }, false);
+    }
+    handleAuthFailure();
+  }
   if (!res.ok) throw Object.assign(new Error(data.status_message ?? data.message ?? "Request failed"), { status: res.status, data });
   return data as T;
 }
@@ -102,11 +132,13 @@ export const authApi = {
   onboarding: (token: string, body: { first_name: string; last_name: string; country: string; company_name: string; website_url?: string; company_size: string }) =>
     request<{ data: { user: User; org: { id: string; name: string }; accessToken: string; refreshToken: string } }>("/v1/auth/onboarding", { method: "POST", token, body: JSON.stringify(body) }),
 
-  refresh: (refreshToken: string) =>
-    request<{ tokens: Tokens }>("/v1/auth/refresh", {
+  refresh: async (refreshToken: string) => {
+    const res = await request<{ data: Tokens }>("/v1/auth/refresh", {
       method: "POST",
       body: JSON.stringify({ refreshToken }),
-    }),
+    });
+    return { tokens: res.data };
+  },
 };
 
 // ── Users ────────────────────────────────────────────────────────────────────

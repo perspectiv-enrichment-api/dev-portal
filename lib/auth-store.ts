@@ -1,10 +1,40 @@
 "use client";
 
 import { authApi, type Tokens, type User } from "./api";
+import {
+  readAccessToken,
+  readRefreshToken,
+  readUserRaw,
+  writeTokens,
+  writeUserRaw,
+  clearAuthStorage,
+} from "./auth-storage";
+import { handleAuthFailure } from "./auth-failure";
+const TOKEN_SKEW_SECONDS = 60;
 
-const ACCESS_KEY = "pv_access";
-const REFRESH_KEY = "pv_refresh";
-const USER_KEY = "pv_user";
+type JwtPayload = {
+  exp?: number;
+};
+
+const decodeJwt = (token: string): JwtPayload | null => {
+  const parts = token.split(".");
+  if (parts.length < 2) return null;
+  try {
+    const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=");
+    const json = atob(padded);
+    return JSON.parse(json) as JwtPayload;
+  } catch {
+    return null;
+  }
+};
+
+const isTokenExpired = (token: string) => {
+  const payload = decodeJwt(token);
+  if (!payload?.exp) return true;
+  const now = Math.floor(Date.now() / 1000);
+  return payload.exp <= now + TOKEN_SKEW_SECONDS;
+};
 
 export function dicebearUrl(seed: string) {
   return `https://api.dicebear.com/9.x/notionists-neutral/svg?seed=${encodeURIComponent(seed)}`;
@@ -12,39 +42,40 @@ export function dicebearUrl(seed: string) {
 
 export const authStore = {
   save(tokens: Tokens, user: User) {
-    localStorage.setItem(ACCESS_KEY, tokens.accessToken);
-    localStorage.setItem(REFRESH_KEY, tokens.refreshToken);
-    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    writeTokens(tokens);
+    writeUserRaw(JSON.stringify(user));
   },
 
   getAccessToken(): string | null {
-    if (typeof window === "undefined") return null;
-    return localStorage.getItem(ACCESS_KEY);
+    return readAccessToken();
   },
 
   getUser(): User | null {
-    if (typeof window === "undefined") return null;
-    const raw = localStorage.getItem(USER_KEY);
+    const raw = readUserRaw();
     return raw ? (JSON.parse(raw) as User) : null;
   },
 
   clear() {
-    localStorage.removeItem(ACCESS_KEY);
-    localStorage.removeItem(REFRESH_KEY);
-    localStorage.removeItem(USER_KEY);
+    clearAuthStorage();
   },
 
   /** Returns a valid access token, refreshing if needed. Throws if unauthenticated. */
   async token(): Promise<string> {
-    const access = localStorage.getItem(ACCESS_KEY);
-    if (access) return access;
+    const access = readAccessToken();
+    if (access && !isTokenExpired(access)) return access;
 
-    const refresh = localStorage.getItem(REFRESH_KEY);
+    const refresh = readRefreshToken();
     if (!refresh) throw new Error("Not authenticated");
 
-    const { tokens } = await authApi.refresh(refresh);
-    const user = authStore.getUser()!;
-    authStore.save(tokens, user);
-    return tokens.accessToken;
+    try {
+      const { tokens } = await authApi.refresh(refresh);
+      const user = authStore.getUser()!;
+      authStore.save(tokens, user);
+      return tokens.accessToken;
+    } catch (err) {
+      authStore.clear();
+      handleAuthFailure();
+      throw err;
+    }
   },
 };
