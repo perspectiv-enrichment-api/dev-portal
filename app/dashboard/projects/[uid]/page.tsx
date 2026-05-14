@@ -170,35 +170,29 @@ export default function ProjectDetailPage() {
         label="API Credentials"
         description="Keys used to authenticate your app when making requests to the Perspectiv API."
       >
-        <div className="space-y-4 max-w-2xl">
-          <div className="flex items-center gap-4">
-            <div className="w-28 shrink-0 text-xs font-medium text-neutral-500">
-              API Key
-            </div>
-            <div className="flex-1 flex items-center gap-2">
-              <Input
-                value={keyDisplay}
-                readOnly
-                placeholder={keysLoading ? "Loading…" : "No API key yet"}
-                className="h-10 text-sm font-mono"
-                wrapperClassName="bg-white"
-              />
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => handleCopy(keyDisplay)}
-                disabled={!keyDisplay}
-                className={copied ? "text-green-600" : ""}
-              >
-                <Copy className="w-4 h-4" />
-              </Button>
-            </div>
+        <div className="grid gap-3 max-w-3xl">
+          <div className="grid grid-cols-[120px,1fr,44px] items-center gap-4">
+            <div className="text-sm text-neutral-500">API Key</div>
+            <Input
+              value={keyDisplay}
+              readOnly
+              placeholder={keysLoading ? "Loading…" : "No API key yet"}
+              className="h-10 text-sm font-mono"
+              wrapperClassName="bg-white"
+            />
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => handleCopy(keyDisplay)}
+              disabled={!keyDisplay}
+              className={cn("h-10 w-10", copied ? "text-green-600" : "")}
+            >
+              <Copy className="w-4 h-4" />
+            </Button>
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="w-28 shrink-0 text-xs font-medium text-neutral-500">
-              API Secret
-            </div>
+          <div className="grid grid-cols-[120px,1fr] items-center gap-4">
+            <div className="text-sm text-neutral-500">API Secret</div>
             <Input
               value=""
               readOnly
@@ -208,9 +202,13 @@ export default function ProjectDetailPage() {
             />
           </div>
 
-          {keyError && <p className="text-sm text-destructive">{keyError}</p>}
+          {keyError && (
+            <p className="text-sm text-destructive col-start-2">
+              {keyError}
+            </p>
+          )}
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 col-start-2">
             <Button
               variant="outline"
               className="gap-2"
