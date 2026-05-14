@@ -91,6 +91,11 @@ export interface ApiKey {
   label: string;
   key_prefix: string;
   org_id: string | null;
+  project_id?: string | null;
+  project_name?: string | null;
+  project_environment?: string | null;
+  project_status?: string | null;
+  project_use_case?: string | null;
   last_used_at: string | null;
   created_at: string;
   revoked: boolean;
@@ -224,11 +229,11 @@ export const usersApi = {
 export const keysApi = {
   list: (token: string) => request<{ keys: ApiKey[] }>("/v1/keys", { token }),
 
-  create: (token: string, label: string) =>
+  create: (token: string, label: string, projectId: string) =>
     request<{ key: ApiKey }>("/v1/keys", {
       method: "POST",
       token,
-      body: JSON.stringify({ label }),
+      body: JSON.stringify({ label, project_id: projectId }),
     }),
 
   revoke: (token: string, keyId: string) =>
