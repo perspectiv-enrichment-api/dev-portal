@@ -170,52 +170,58 @@ export default function ProjectDetailPage() {
         label="API Credentials"
         description="Keys used to authenticate your app when making requests to the Perspectiv API."
       >
-        <div className="grid gap-3 max-w-3xl">
-          <div className="grid grid-cols-[120px,1fr,44px] items-center gap-4">
-            <div className="text-sm text-neutral-500">API Key</div>
-            <Input
+        <div className="grid gap-3 max-w-xl">
+          <div className="flex items-center border border-neutral-200 rounded-lg bg-white overflow-hidden h-10">
+            <span className="px-3 text-sm text-neutral-500 border-r border-neutral-200 h-full flex items-center shrink-0">
+              API Key
+            </span>
+            <input
               value={keyDisplay}
               readOnly
               placeholder={keysLoading ? "Loading…" : "No API key yet"}
-              className="h-10 text-sm font-mono"
-              wrapperClassName="bg-white"
+              className="flex-1 px-3 text-sm font-mono bg-transparent outline-none text-neutral-700"
             />
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => handleCopy(keyDisplay)}
-              disabled={!keyDisplay}
-              className={cn("h-10 w-10", copied ? "text-green-600" : "")}
-            >
-              <Copy className="w-4 h-4" />
-            </Button>
           </div>
 
-          <div className="grid grid-cols-[120px,1fr] items-center gap-4">
-            <div className="text-sm text-neutral-500">API Secret</div>
-            <Input
-              value=""
+          <div className="flex items-center border border-neutral-200 rounded-lg bg-white overflow-hidden h-10">
+            <span className="px-3 text-sm text-neutral-500 border-r border-neutral-200 h-full flex items-center shrink-0">
+              API Secret
+            </span>
+            <input
+              value={generatedKey ? "(shown above — copy now)" : ""}
               readOnly
-              placeholder="Not stored. Generate a new key to rotate."
-              className="h-10 text-sm"
-              wrapperClassName="bg-white"
+              placeholder="Not stored — generate a new key to rotate"
+              className="flex-1 px-3 text-sm font-mono bg-transparent outline-none text-neutral-700"
             />
           </div>
 
-          {keyError && (
-            <p className="text-sm text-destructive col-start-2">{keyError}</p>
-          )}
+          {keyError && <p className="text-sm text-destructive">{keyError}</p>}
 
-          <div className="flex items-center gap-3 col-start-2">
+          <div className="flex items-center gap-3">
             <Button
               variant="outline"
-              className="gap-2"
+              className="gap-2 hover:text-primary dark:hover:text-white"
               onClick={handleCreateKey}
               disabled={creatingKey}
+              iconLeading={<KeyRound className="w-4 h-4" />}
             >
-              <KeyRound className="w-4 h-4" />
+              {/* <KeyRound className="w-4 h-4" /> */}
               {creatingKey ? "Generating…" : "Generate new key"}
             </Button>
+            {keyDisplay && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className={cn(
+                  "gap-1.5 hover:text-neutral-700 dark:hover:text-neutral-300",
+                  copied ? "text-green-600" : "text-neutral-500",
+                )}
+                onClick={() => handleCopy(keyDisplay)}
+                iconLeading={<Copy className="w-3.5 h-3.5" />}
+              >
+                {copied ? "Copied" : "Copy key"}
+              </Button>
+            )}
             {generatedKey && (
               <span className="text-xs text-muted-foreground">
                 Copy this key now. You will not see it again.
@@ -227,7 +233,7 @@ export default function ProjectDetailPage() {
 
       {/* Project name */}
       <Section label="Project name">
-        <div className="relative w-full max-w-lg">
+        <div className="relative w-full max-w-xl">
           <Box className="absolute left-3 top-[50%] -translate-y-1/2 w-4 h-4 text-[#737373]" />
           <Input
             value={name}
@@ -242,7 +248,7 @@ export default function ProjectDetailPage() {
         label="Project photo"
         description="Helps you visually identify this project."
       >
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 w-full max-w-xl">
           <ProjectLogo
             name={project.name}
             logo={project.project_icon_url}
@@ -250,7 +256,7 @@ export default function ProjectDetailPage() {
           />
           <button
             className={cn(
-              "flex flex-col items-center justify-center gap-2 border border-neutral-200 rounded-lg w-96 h-28 cursor-pointer transition-colors",
+              "flex flex-col items-center justify-center gap-2 border border-neutral-200 rounded-lg flex-1 h-28 cursor-pointer transition-colors",
               dragOver
                 ? "bg-neutral-50 border-neutral-400"
                 : "bg-white hover:bg-neutral-50",
@@ -288,20 +294,18 @@ export default function ProjectDetailPage() {
 
       {/* Environment */}
       <Section label="Environment">
-        <Input
-          value={project.environment}
-          readOnly
-          className="h-10 text-sm w-full max-w-lg text-neutral-500 capitalize"
-        />
-      </Section>
-
-      {/* Use case */}
-      <Section label="Use case">
-        <Input
-          value={project.use_case}
-          readOnly
-          className="h-10 text-sm w-full max-w-lg text-neutral-500 capitalize"
-        />
+        <div className="w-full max-w-xl">
+          <Input
+            value={
+              project.environment
+                ? project.environment.charAt(0).toUpperCase() +
+                  project.environment.slice(1)
+                : ""
+            }
+            readOnly
+            className="h-10 text-sm w-full text-neutral-500"
+          />
+        </div>
       </Section>
 
       {/* Project status */}
@@ -313,7 +317,7 @@ export default function ProjectDetailPage() {
           type="single"
           value={status}
           onValueChange={(v) => v && setStatus(v)}
-          className="flex w-full max-w-lg border border-neutral-200 rounded-lg overflow-hidden"
+          className="flex w-full max-w-xl border border-neutral-200 rounded-lg overflow-hidden"
         >
           {(["active", "inactive"] as const).map((s) => (
             <ToggleGroup.Item
