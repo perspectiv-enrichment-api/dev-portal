@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ProjectLogo } from "@/components/project-logo";
 import { Layers, ChevronRight, CheckCircle, Box, Copy, KeyRound } from "lucide-react";
+import { MultiSelect } from "@/components/ui/multi-select";
 import * as ToggleGroup from "@radix-ui/react-toggle-group";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -22,6 +23,7 @@ export default function ProjectDetailPage() {
   const [project, setProject] = useState<Project | null>(null);
   const [name, setName] = useState("");
   const [status, setStatus] = useState("active");
+  const [useCases, setUseCases] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [regeneratingLogo, setRegeneratingLogo] = useState(false);
   const [keys, setKeys] = useState<ApiKey[]>([]);
@@ -38,6 +40,7 @@ export default function ProjectDetailPage() {
         setProject(p);
         setName(p.name);
         setStatus(p.status);
+        setUseCases(p.use_case ? p.use_case.split(",") : []);
       }),
     );
   }, [uid]);
@@ -66,7 +69,7 @@ export default function ProjectDetailPage() {
     setSaving(true);
     try {
       const token = await authStore.token();
-      const res = await projectsApi.update(token, project.id, { name, status });
+      const res = await projectsApi.update(token, project.id, { name, status, use_case: useCases.join(",") });
       setProject(res.data.project);
       await refreshProjects();
       router.push("/dashboard");
@@ -109,7 +112,7 @@ export default function ProjectDetailPage() {
       </>,
     );
     return () => setHeaderContent(null);
-  }, [project, name, status, saving]);
+  }, [project, name, status, useCases, saving]);
 
   if (!project) {
     return (
@@ -277,6 +280,26 @@ export default function ProjectDetailPage() {
             }
             readOnly
             className="h-10 text-sm w-full text-neutral-500"
+          />
+        </div>
+      </Section>
+
+      {/* Use cases */}
+      <Section label="Use cases">
+        <div className="w-full max-w-xl">
+          <MultiSelect
+            placeholder="Select use cases"
+            value={useCases}
+            onValueChange={setUseCases}
+            options={[
+              { value: "personal_finance", label: "Personal finance & budgeting apps" },
+              { value: "banking_fintech", label: "Banking & fintech platforms" },
+              { value: "expense_management", label: "Expense management tools" },
+              { value: "merchant_ecommerce", label: "Merchant / e-commerce analytics" },
+              { value: "internal_analytics", label: "Internal analytics & reporting" },
+              { value: "fraud_detection", label: "Fraud detection & risk systems" },
+              { value: "customer_experience", label: "Customer experience & notifications" },
+            ]}
           />
         </div>
       </Section>
