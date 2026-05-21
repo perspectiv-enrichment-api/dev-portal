@@ -10,6 +10,16 @@ import {
   clearAuthStorage,
 } from "./auth-storage";
 import { handleAuthFailure } from "./auth-failure";
+
+const MOCK_USER: User = {
+  id: "mock_user_1",
+  email: "alex.johnson@company.com",
+  name: "Alex Johnson",
+  role: "owner",
+  org_id: "mock_org_1",
+};
+
+const isMock = () => process.env.NEXT_PUBLIC_MOCK_SESSION === "true";
 const TOKEN_SKEW_SECONDS = 60;
 
 type JwtPayload = {
@@ -54,6 +64,7 @@ export const authStore = {
   },
 
   getUser(): User | null {
+    if (isMock()) return MOCK_USER;
     const raw = readUserRaw();
     return raw ? (JSON.parse(raw) as User) : null;
   },
@@ -64,6 +75,7 @@ export const authStore = {
 
   /** Returns a valid access token, refreshing if needed. Throws if unauthenticated. */
   async token(): Promise<string> {
+    if (isMock()) return "mock_access_token";
     const access = readAccessToken();
     if (access && !isTokenExpired(access)) return access;
 

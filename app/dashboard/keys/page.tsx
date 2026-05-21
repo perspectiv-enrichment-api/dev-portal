@@ -95,6 +95,9 @@ export default function APIKeysPage() {
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+    if (text === generatedKey) {
+      handleCloseDialog();
+    }
   };
 
   const handleCloseDialog = () => {
@@ -191,7 +194,7 @@ export default function APIKeysPage() {
                       variant="outline"
                       size="icon"
                       onClick={() => handleCopy(generatedKey)}
-                      className={copied ? "text-green-600" : ""}
+                      className={copied ? "text-green-600" : "hover:bg-muted"}
                     >
                       <Copy className="w-4 h-4" />
                     </Button>
@@ -289,7 +292,7 @@ export default function APIKeysPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleCopy(apiKey.key_prefix)}
-                      className="text-muted-foreground hover:text-foreground"
+                      className="text-muted-foreground hover:text-foreground hover:bg-muted/60"
                     >
                       <Copy className="w-4 h-4" />
                     </Button>

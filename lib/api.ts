@@ -227,14 +227,17 @@ export const usersApi = {
 // ── API Keys ─────────────────────────────────────────────────────────────────
 
 export const keysApi = {
-  list: (token: string) => request<{ keys: ApiKey[] }>("/v1/keys", { token }),
+  list: (token: string) =>
+    request<{ keys?: ApiKey[]; data?: { keys?: ApiKey[] } }>("/v1/keys", {
+      token,
+    }).then((res) => ({ keys: res.data?.keys ?? res.keys ?? [] })),
 
   create: (token: string, label: string, projectId: string) =>
-    request<{ key: ApiKey }>("/v1/keys", {
+    request<{ key?: ApiKey; data?: { key?: ApiKey } }>("/v1/keys", {
       method: "POST",
       token,
       body: JSON.stringify({ label, project_id: projectId }),
-    }),
+    }).then((res) => ({ key: res.data?.key ?? res.key })),
 
   revoke: (token: string, keyId: string) =>
     request<void>(`/v1/keys/${keyId}`, { method: "DELETE", token }),

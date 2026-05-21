@@ -1,25 +1,18 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useDashboard } from "../../dashboard-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ProjectLogo } from "@/components/project-logo";
-import {
-  Layers,
-  ChevronRight,
-  UploadCloud,
-  CheckCircle,
-  Box,
-  Copy,
-  KeyRound,
-} from "lucide-react";
+import { Layers, ChevronRight, CheckCircle, Box, Copy, KeyRound } from "lucide-react";
 import * as ToggleGroup from "@radix-ui/react-toggle-group";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { keysApi, projectsApi, type ApiKey, type Project } from "@/lib/api";
 import { authStore } from "@/lib/auth-store";
+import { projectDicebearUrl } from "@/lib/project-avatar";
 
 export default function ProjectDetailPage() {
   const { uid } = useParams<{ uid: string }>();
@@ -30,8 +23,7 @@ export default function ProjectDetailPage() {
   const [name, setName] = useState("");
   const [status, setStatus] = useState("active");
   const [saving, setSaving] = useState(false);
-  const [dragOver, setDragOver] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [regeneratingLogo, setRegeneratingLogo] = useState(false);
   const [keys, setKeys] = useState<ApiKey[]>([]);
   const [keysLoading, setKeysLoading] = useState(true);
   const [generatedKey, setGeneratedKey] = useState("");
@@ -161,6 +153,24 @@ export default function ProjectDetailPage() {
     await navigator.clipboard.writeText(value);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 2000);
+    if (value === generatedKey) setGeneratedKey("");
+  };
+
+  const handleRegenerateLogo = async () => {
+    if (!project) return;
+    setRegeneratingLogo(true);
+    try {
+      const token = await authStore.token();
+      const seed = `${project.id}-${Date.now()}-${Math.random()}`;
+      const nextLogoUrl = projectDicebearUrl(seed);
+      const res = await projectsApi.update(token, project.id, {
+        project_icon_url: nextLogoUrl,
+      });
+      setProject(res.data.project);
+      await refreshProjects();
+    } finally {
+      setRegeneratingLogo(false);
+    }
   };
 
   return (
@@ -183,24 +193,12 @@ export default function ProjectDetailPage() {
             />
           </div>
 
-          <div className="flex items-center border border-neutral-200 rounded-lg bg-white overflow-hidden h-10">
-            <span className="px-3 text-sm text-neutral-500 border-r border-neutral-200 h-full flex items-center shrink-0">
-              API Secret
-            </span>
-            <input
-              value={generatedKey ? "(shown above — copy now)" : ""}
-              readOnly
-              placeholder="Not stored — generate a new key to rotate"
-              className="flex-1 px-3 text-sm font-mono bg-transparent outline-none text-neutral-700"
-            />
-          </div>
-
           {keyError && <p className="text-sm text-destructive">{keyError}</p>}
 
           <div className="flex items-center gap-3">
             <Button
               variant="outline"
-              className="gap-2 hover:text-primary dark:hover:text-white"
+              className="gap-2 hover:text-neutral-900 hover:bg-neutral-100"
               onClick={handleCreateKey}
               disabled={creatingKey}
               iconLeading={<KeyRound className="w-4 h-4" />}
@@ -213,7 +211,7 @@ export default function ProjectDetailPage() {
                 variant="ghost"
                 size="sm"
                 className={cn(
-                  "gap-1.5 hover:text-neutral-700 dark:hover:text-neutral-300",
+                  "gap-1.5 text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100",
                   copied ? "text-green-600" : "text-neutral-500",
                 )}
                 onClick={() => handleCopy(keyDisplay)}
@@ -246,7 +244,7 @@ export default function ProjectDetailPage() {
       {/* Project photo */}
       <Section
         label="Project photo"
-        description="Helps you visually identify this project."
+        description="Regenerate a new Dicebear image if you want a fresh look."
       >
         <div className="flex items-center gap-4 w-full max-w-xl">
           <ProjectLogo
@@ -254,41 +252,16 @@ export default function ProjectDetailPage() {
             logo={project.project_icon_url}
             size="lg"
           />
-          <button
-            className={cn(
-              "flex flex-col items-center justify-center gap-2 border border-neutral-200 rounded-lg flex-1 h-28 cursor-pointer transition-colors",
-              dragOver
-                ? "bg-neutral-50 border-neutral-400"
-                : "bg-white hover:bg-neutral-50",
-            )}
-            onClick={() => fileInputRef.current?.click()}
-            onDragOver={(e) => {
-              e.preventDefault();
-              setDragOver(true);
-            }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={(e) => {
-              e.preventDefault();
-              setDragOver(false);
-            }}
-          >
-            <div className="border border-neutral-200 rounded-lg p-1">
-              <UploadCloud className="w-5 h-5 text-[#737373]" />
-            </div>
-            <p className="text-xs">
-              <span className="text-sm font-semibold text-neutral-700">
-                Click to upload
-              </span>{" "}
-              or drag and drop
-            </p>
-            <p className="text-xs">PNG, JPG or GIF (max. 800×400px)</p>
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-          />
+          <div className="flex-1">
+            <Button
+              variant="outline"
+              className="gap-2 hover:text-neutral-900 hover:bg-neutral-100"
+              onClick={handleRegenerateLogo}
+              disabled={regeneratingLogo}
+            >
+              {regeneratingLogo ? "Regenerating…" : "Regenerate image"}
+            </Button>
+          </div>
         </div>
       </Section>
 
