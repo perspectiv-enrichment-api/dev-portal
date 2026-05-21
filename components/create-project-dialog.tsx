@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { MultiSelect } from "@/components/ui/multi-select";
 import { projectsApi } from "@/lib/api";
 import { authStore } from "@/lib/auth-store";
 
@@ -33,12 +34,12 @@ export function CreateProjectDialog({
   onCreated,
 }: CreateProjectDialogProps) {
   const [name, setName] = useState("");
-  const [useCase, setUseCase] = useState("");
+  const [useCase, setUseCase] = useState<string[]>([]);
   const [environment, setEnvironment] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const canSubmit = name.trim() && useCase && environment;
+  const canSubmit = name.trim() && useCase.length > 0 && environment;
 
   async function handleCreate() {
     if (!canSubmit) return;
@@ -46,9 +47,9 @@ export function CreateProjectDialog({
     setLoading(true);
     try {
       const token = await authStore.token();
-      await projectsApi.create(token, { name: name.trim(), environment, use_case: useCase });
+      await projectsApi.create(token, { name: name.trim(), environment, use_case: useCase.join(",") });
       setName("");
-      setUseCase("");
+      setUseCase([]);
       setEnvironment("");
       onOpenChange(false);
       onCreated?.();
@@ -61,7 +62,7 @@ export function CreateProjectDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden">
+      <DialogContent className="sm:max-w-lg p-0 gap-0 overflow-hidden">
         {/* Header */}
         <div className="flex items-center gap-3 px-7 py-7 border-b border-neutral-200">
           <div className="w-11 h-11 rounded-lg border border-neutral-200 flex items-center justify-center shrink-0">
@@ -95,17 +96,21 @@ export function CreateProjectDialog({
             <label className="text-sm font-medium text-neutral-900 w-32 shrink-0">
               Use case
             </label>
-            <Select value={useCase} onValueChange={setUseCase}>
-              <SelectTrigger className="flex-1 w-full">
-                <SelectValue placeholder="Select use case" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="analytics">Analytics</SelectItem>
-                <SelectItem value="ecommerce">E-commerce</SelectItem>
-                <SelectItem value="fintech">Fintech</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
-              </SelectContent>
-            </Select>
+            <MultiSelect
+              className="flex-1"
+              placeholder="Select use case"
+              value={useCase}
+              onValueChange={setUseCase}
+              options={[
+                { value: "personal_finance", label: "Personal finance & budgeting apps" },
+                { value: "banking_fintech", label: "Banking & fintech platforms" },
+                { value: "expense_management", label: "Expense management tools" },
+                { value: "merchant_ecommerce", label: "Merchant / e-commerce analytics" },
+                { value: "internal_analytics", label: "Internal analytics & reporting" },
+                { value: "fraud_detection", label: "Fraud detection & risk systems" },
+                { value: "customer_experience", label: "Customer experience & notifications" },
+              ]}
+            />
           </div>
 
           <div className="flex items-center gap-4">
