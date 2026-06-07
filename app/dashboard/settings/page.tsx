@@ -1,15 +1,37 @@
 'use client'
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Label } from '@/components/ui/label'
 import { useTheme } from 'next-themes'
 import { usersApi, type User } from '@/lib/api'
 import { authStore } from '@/lib/auth-store'
 import { Moon, Monitor, Sun } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { cn } from '@/lib/utils'
+
+function Section({
+  label,
+  description,
+  children,
+}: {
+  label: string
+  description?: string
+  children: React.ReactNode
+}) {
+  return (
+    <div className="flex items-start gap-8 px-8 py-8 border-b-2 border-neutral-100 mx-8 last:border-b-0">
+      <div className="w-56 shrink-0">
+        <p className="text-sm font-semibold text-neutral-900">{label}</p>
+        {description && (
+          <p className="text-sm text-neutral-500 mt-0.5">{description}</p>
+        )}
+      </div>
+      <div className="flex-1">{children}</div>
+    </div>
+  )
+}
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme()
@@ -68,128 +90,88 @@ export default function SettingsPage() {
 
   if (!mounted || !user) {
     return (
-      <div className="p-6 max-w-4xl mx-auto space-y-8">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Settings</h1>
-        </div>
-        <Card className="bg-card/50 backdrop-blur border-border">
-          <CardContent>
-            <div className="h-24 animate-pulse bg-muted rounded-md" />
-          </CardContent>
-        </Card>
+      <div className="flex-1 flex items-center justify-center text-sm text-neutral-400">
+        Loading…
       </div>
     )
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">Settings</h1>
-        <p className="text-muted-foreground">Manage your account and subscription preferences</p>
-      </div>
+    <div className="flex-1 overflow-auto">
+      {/* Full name */}
+      <Section label="Full name">
+        <div className="w-full max-w-xl">
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full h-10 px-3 text-sm border border-neutral-200 rounded-lg bg-white outline-none focus:ring-2 focus:ring-neutral-300 text-neutral-900"
+          />
+        </div>
+      </Section>
 
-      {/* Account Information */}
-      <Card className="bg-card/50 backdrop-blur border-border">
-        <CardHeader>
-          <CardTitle>Account Information</CardTitle>
-          <CardDescription>Your profile details</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">Full Name</label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full mt-2 px-4 py-2 bg-background border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">Email</label>
-              <input
-                type="email"
-                defaultValue={user.email}
-                readOnly
-                className="w-full mt-2 px-4 py-2 bg-background border border-border rounded-lg text-muted-foreground"
-              />
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button onClick={handleSave} disabled={saving}>{saving ? 'Saving…' : 'Save Changes'}</Button>
-            {saveMsg && <span className="text-sm text-muted-foreground">{saveMsg}</span>}
-          </div>
-        </CardContent>
-      </Card>
+      {/* Email */}
+      <Section label="Email" description="Your login email address">
+        <div className="w-full max-w-xl">
+          <input
+            type="email"
+            defaultValue={user.email}
+            readOnly
+            className="w-full h-10 px-3 text-sm border border-neutral-200 rounded-lg bg-white text-neutral-500 outline-none"
+          />
+        </div>
+      </Section>
 
-      {/* UI / Display */}
-      <Card className="bg-card/50 backdrop-blur border-border">
-        <CardHeader>
-          <CardTitle>UI / Display</CardTitle>
-          <CardDescription>Customize how the application looks</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div>
-            <label className="text-sm font-medium text-muted-foreground mb-3 block">
-              Theme
-            </label>
-            <RadioGroup
-              value={theme}
-              onValueChange={(value) => setTheme(value)}
-              className="grid grid-cols-1 sm:grid-cols-3 gap-3"
-            >
-              <div>
-                <RadioGroupItem value="light" id="theme-light" className="peer sr-only" />
-                <Label
-                  htmlFor="theme-light"
-                  className="flex flex-col items-center justify-between rounded-md border-2 border-border bg-popover p-4 hover:bg-accent/5 cursor-pointer peer-data-[state=checked]:border-accent [&:has([data-state=checked])]:border-accent"
-                >
-                  <Sun className="mb-2 h-6 w-6 text-foreground" />
-                  <span className="text-sm font-medium">Light</span>
-                </Label>
-              </div>
-              <div>
-                <RadioGroupItem value="dark" id="theme-dark" className="peer sr-only" />
-                <Label
-                  htmlFor="theme-dark"
-                  className="flex flex-col items-center justify-between rounded-md border-2 border-border bg-popover p-4 hover:bg-accent/5 cursor-pointer peer-data-[state=checked]:border-accent [&:has([data-state=checked])]:border-accent"
-                >
-                  <Moon className="mb-2 h-6 w-6 text-foreground" />
-                  <span className="text-sm font-medium">Dark</span>
-                </Label>
-              </div>
-              <div>
-                <RadioGroupItem value="system" id="theme-system" className="peer sr-only" />
-                <Label
-                  htmlFor="theme-system"
-                  className="flex flex-col items-center justify-between rounded-md border-2 border-border bg-popover p-4 hover:bg-accent/5 cursor-pointer peer-data-[state=checked]:border-accent [&:has([data-state=checked])]:border-accent"
-                >
-                  <Monitor className="mb-2 h-6 w-6 text-foreground" />
-                  <span className="text-sm font-medium">System</span>
-                </Label>
-              </div>
-            </RadioGroup>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Save */}
+      <Section label="Save changes">
+        <div className="flex items-center gap-3">
+          <Button
+            className="bg-neutral-900 hover:bg-neutral-800 text-white"
+            onClick={handleSave}
+            disabled={saving}
+          >
+            {saving ? 'Saving…' : 'Save changes'}
+          </Button>
+          {saveMsg && <span className="text-sm text-neutral-500">{saveMsg}</span>}
+        </div>
+      </Section>
 
-      {/* Danger Zone */}
-      <Card className="bg-destructive/5 border-destructive/20">
-        <CardHeader>
-          <CardTitle className="text-destructive">Danger Zone</CardTitle>
-          <CardDescription>Irreversible actions</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-start justify-between p-4 bg-background border border-border rounded-lg">
-            <div>
-              <h4 className="font-semibold text-foreground">Delete Account</h4>
-              <p className="text-sm text-muted-foreground">Once you delete your account, there is no going back.</p>
+      {/* Theme */}
+      <Section label="Theme" description="Customize how the application looks">
+        <RadioGroup
+          value={theme}
+          onValueChange={(value) => setTheme(value)}
+          className="grid grid-cols-3 gap-3 max-w-xl"
+        >
+          {[
+            { value: 'light', label: 'Light', icon: Sun },
+            { value: 'dark', label: 'Dark', icon: Moon },
+            { value: 'system', label: 'System', icon: Monitor },
+          ].map(({ value, label, icon: Icon }) => (
+            <div key={value}>
+              <RadioGroupItem value={value} id={`theme-${value}`} className="peer sr-only" />
+              <Label
+                htmlFor={`theme-${value}`}
+                className={cn(
+                  'flex flex-col items-center justify-between rounded-lg border-2 border-neutral-200 bg-white p-4 cursor-pointer hover:bg-neutral-50',
+                  'peer-data-[state=checked]:border-neutral-900 [&:has([data-state=checked])]:border-neutral-900',
+                )}
+              >
+                <Icon className="mb-2 h-5 w-5 text-neutral-600" />
+                <span className="text-sm font-medium text-neutral-900">{label}</span>
+              </Label>
             </div>
-            <Button variant="destructive" onClick={handleDelete}>Delete Account</Button>
-          </div>
-        </CardContent>
-      </Card>
+          ))}
+        </RadioGroup>
+      </Section>
+
+      {/* Danger zone */}
+      <Section label="Delete account" description="Once deleted, there is no going back.">
+        <div className="flex items-center justify-between border border-neutral-200 rounded-lg bg-white px-4 py-3 max-w-xl">
+          <p className="text-sm text-neutral-500">Permanently remove your account and all data.</p>
+          <Button variant="destructive" onClick={handleDelete}>Delete account</Button>
+        </div>
+      </Section>
     </div>
   )
 }
