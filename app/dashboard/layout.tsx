@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { ProjectLogo } from "@/components/project-logo";
-import { Layers, FileText, Settings, LogOut, Plus, ShieldCheck } from "lucide-react";
+import { Layers, FileText, Settings, LogOut, Plus } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
@@ -10,7 +10,6 @@ import { DashboardProvider, useDashboard } from "./dashboard-context";
 import { Button } from "@/components/ui/button";
 import { CreateProjectDialog } from "@/components/create-project-dialog";
 import { authStore, dicebearUrl } from "@/lib/auth-store";
-import { isAdminRole } from "@/lib/roles";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { User } from "@/lib/api";
@@ -119,11 +118,6 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    setIsAdmin(isAdminRole(authStore.getUser()?.role));
-  }, []);
 
   return (
     <DashboardProvider>
@@ -181,21 +175,6 @@ export default function DashboardLayout({
                 </Link>
               );
             })}
-
-            {isAdmin && (
-              <Link
-                href="/admin/merchants"
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
-                  pathname.startsWith("/admin")
-                    ? "bg-neutral-100 text-neutral-900"
-                    : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900",
-                )}
-              >
-                <ShieldCheck className="w-4 h-4 text-[#A3A3A3]" />
-                <span className="text-neutral-900">Admin</span>
-              </Link>
-            )}
           </nav>
 
           <SidebarUser />

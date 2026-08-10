@@ -443,6 +443,35 @@ export const projectsApi = {
       body: JSON.stringify(body),
     }),
 
+  /**
+   * Uploads a custom project icon and returns its public URL.
+   *
+   * Mirrors the merchant logo contract: ask for a presigned URL, PUT the raw
+   * file straight to storage (no auth header, no JSON envelope — so this
+   * bypasses `request()`), then hand the public URL back for the caller to
+   * PATCH onto the project.
+   */
+  uploadIcon: async (
+    token: string,
+    projectId: string,
+    file: File,
+  ): Promise<string> => {
+    const res = await request<{
+      data: { upload_url: string; public_url: string };
+    }>(`/v1/projects/${projectId}/icon-upload-url`, {
+      method: "POST",
+      token,
+      body: JSON.stringify({ content_type: file.type }),
+    });
+    const put = await fetch(res.data.upload_url, {
+      method: "PUT",
+      headers: { "Content-Type": file.type },
+      body: file,
+    });
+    if (!put.ok) throw new Error(`Upload failed for ${file.name}`);
+    return res.data.public_url;
+  },
+
   delete: (token: string, projectId: string) =>
     request<void>(`/v1/projects/${projectId}`, { method: "DELETE", token }),
 };
@@ -461,9 +490,20 @@ export const merchantsApi = {
       return mockListMerchants(params);
     }
     const res = await request<{
-      data: { merchants: Merchant[]; total: number };
+      data: {
+        merchants: Merchant[];
+        pagination: {
+          page: number;
+          limit: number;
+          total: number;
+          total_pages: number;
+        };
+      };
     }>(`/v1/merchants${queryString(params)}`, { token });
-    return res.data;
+    return {
+      merchants: res.data.merchants,
+      total: res.data.pagination?.total ?? res.data.merchants.length,
+    };
   },
 
   get: async (token: string, merchantId: string): Promise<MerchantDetail> => {

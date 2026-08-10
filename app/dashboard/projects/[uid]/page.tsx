@@ -1,19 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useDashboard } from "../../dashboard-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ProjectLogo } from "@/components/project-logo";
-import { Layers, ChevronRight, CheckCircle, Box, Copy, KeyRound } from "lucide-react";
+import { Layers, ChevronRight, CheckCircle, Box, Copy, KeyRound, Upload } from "lucide-react";
 import { MultiSelect } from "@/components/ui/multi-select";
 import * as ToggleGroup from "@radix-ui/react-toggle-group";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { keysApi, projectsApi, type ApiKey, type Project } from "@/lib/api";
 import { authStore } from "@/lib/auth-store";
-import { projectDicebearUrl } from "@/lib/project-avatar";
+import {
+  projectDicebearUrl,
+  PROJECT_IMAGE_ACCEPT,
+  validateProjectImage,
+} from "@/lib/project-avatar";
+import { toast } from "sonner";
 
 export default function ProjectDetailPage() {
   const { uid } = useParams<{ uid: string }>();
@@ -26,6 +31,8 @@ export default function ProjectDetailPage() {
   const [useCases, setUseCases] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [regeneratingLogo, setRegeneratingLogo] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
   const [keys, setKeys] = useState<ApiKey[]>([]);
   const [keysLoading, setKeysLoading] = useState(true);
   const [generatedKey, setGeneratedKey] = useState("");
@@ -176,6 +183,32 @@ export default function ProjectDetailPage() {
     }
   };
 
+  const handleUploadLogo = async (file: File) => {
+    if (!project) return;
+    const invalid = validateProjectImage(file);
+    if (invalid) {
+      toast.error(invalid);
+      return;
+    }
+    setUploadingLogo(true);
+    try {
+      const token = await authStore.token();
+      const publicUrl = await projectsApi.uploadIcon(token, project.id, file);
+      const res = await projectsApi.update(token, project.id, {
+        project_icon_url: publicUrl,
+      });
+      setProject(res.data.project);
+      await refreshProjects();
+      toast.success("Project photo updated");
+    } catch (err: unknown) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to upload image",
+      );
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
   return (
     <div className="flex-1 overflow-auto">
       {/* API credentials */}
@@ -247,7 +280,7 @@ export default function ProjectDetailPage() {
       {/* Project photo */}
       <Section
         label="Project photo"
-        description="Regenerate a new Dicebear image if you want a fresh look."
+        description="Upload your own image, or regenerate a Dicebear one for a fresh look."
       >
         <div className="flex items-center gap-4 w-full max-w-xl">
           <ProjectLogo
@@ -255,12 +288,32 @@ export default function ProjectDetailPage() {
             logo={project.project_icon_url}
             size="lg"
           />
-          <div className="flex-1">
+          <input
+            ref={logoInputRef}
+            type="file"
+            accept={PROJECT_IMAGE_ACCEPT}
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              e.target.value = "";
+              if (file) handleUploadLogo(file);
+            }}
+          />
+          <div className="flex-1 flex items-center gap-3">
+            <Button
+              variant="outline"
+              className="gap-2 hover:text-neutral-900 hover:bg-neutral-100"
+              onClick={() => logoInputRef.current?.click()}
+              disabled={uploadingLogo || regeneratingLogo}
+              iconLeading={<Upload className="w-4 h-4" />}
+            >
+              {uploadingLogo ? "Uploading…" : "Upload image"}
+            </Button>
             <Button
               variant="outline"
               className="gap-2 hover:text-neutral-900 hover:bg-neutral-100"
               onClick={handleRegenerateLogo}
-              disabled={regeneratingLogo}
+              disabled={regeneratingLogo || uploadingLogo}
             >
               {regeneratingLogo ? "Regenerating…" : "Regenerate image"}
             </Button>

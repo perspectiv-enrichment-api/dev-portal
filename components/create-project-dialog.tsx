@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Box } from "lucide-react";
+import { useRef, useState } from "react";
+import { Box, Upload, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -21,6 +21,11 @@ import {
 import { MultiSelect } from "@/components/ui/multi-select";
 import { projectsApi } from "@/lib/api";
 import { authStore } from "@/lib/auth-store";
+import {
+  PROJECT_IMAGE_ACCEPT,
+  validateProjectImage,
+} from "@/lib/project-avatar";
+import { toast } from "sonner";
 
 interface CreateProjectDialogProps {
   open: boolean;
@@ -38,8 +43,24 @@ export function CreateProjectDialog({
   const [environment, setEnvironment] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [icon, setIcon] = useState<{ file: File; dataUrl: string } | null>(
+    null,
+  );
+  const iconInputRef = useRef<HTMLInputElement>(null);
 
   const canSubmit = name.trim() && useCase.length > 0 && environment;
+
+  function pickIcon(file: File) {
+    const invalid = validateProjectImage(file);
+    if (invalid) {
+      setError(invalid);
+      return;
+    }
+    setError("");
+    const reader = new FileReader();
+    reader.onload = () => setIcon({ file, dataUrl: reader.result as string });
+    reader.readAsDataURL(file);
+  }
 
   async function handleCreate() {
     if (!canSubmit) return;
@@ -47,10 +68,30 @@ export function CreateProjectDialog({
     setLoading(true);
     try {
       const token = await authStore.token();
-      await projectsApi.create(token, { name: name.trim(), environment, use_case: useCase.join(",") });
+      const res = await projectsApi.create(token, { name: name.trim(), environment, use_case: useCase.join(",") });
+      // The icon needs a project to attach to, so it is uploaded after create.
+      // A failure here shouldn't discard the project the user just made.
+      if (icon) {
+        try {
+          const projectId = res.data.project.id;
+          const publicUrl = await projectsApi.uploadIcon(
+            token,
+            projectId,
+            icon.file,
+          );
+          await projectsApi.update(token, projectId, {
+            project_icon_url: publicUrl,
+          });
+        } catch {
+          toast.error(
+            "Project created, but the image upload failed. You can upload it from the project's page.",
+          );
+        }
+      }
       setName("");
       setUseCase([]);
       setEnvironment("");
+      setIcon(null);
       onOpenChange(false);
       onCreated?.();
     } catch (err: unknown) {
@@ -127,6 +168,62 @@ export function CreateProjectDialog({
                 <SelectItem value="development">Development</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <label className="text-sm font-medium text-neutral-900 w-32 shrink-0">
+              Project photo
+            </label>
+            <div className="flex-1 flex flex-col gap-1.5">
+              <div className="flex items-center gap-3">
+                <input
+                  ref={iconInputRef}
+                  type="file"
+                  accept={PROJECT_IMAGE_ACCEPT}
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    e.target.value = "";
+                    if (file) pickIcon(file);
+                  }}
+                />
+                <div className="w-11 h-11 rounded-full border border-neutral-200 bg-white overflow-hidden flex items-center justify-center shrink-0">
+                  {icon ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={icon.dataUrl}
+                      alt="Project photo preview"
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <Box className="w-5 h-5 text-neutral-400" />
+                  )}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => iconInputRef.current?.click()}
+                  iconLeading={<Upload className="w-4 h-4" />}
+                >
+                  {icon ? "Change image" : "Upload image"}
+                </Button>
+                {icon && (
+                  <button
+                    type="button"
+                    onClick={() => setIcon(null)}
+                    className="text-neutral-400 hover:text-neutral-600 shrink-0"
+                    aria-label="Remove image"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+              {!icon && (
+                <span className="text-xs text-neutral-500">
+                  Optional — one is generated for you.
+                </span>
+              )}
+            </div>
           </div>
 
           {error && <p className="text-sm text-destructive">{error}</p>}
