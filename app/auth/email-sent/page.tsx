@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { AuthFooter } from "@/components/auth/auth-footer";
 import { AuthHeader } from "@/components/auth/auth-header";
 import { EmailSentForm } from "@/components/auth/email-sent-form";
@@ -15,7 +15,9 @@ export default function EmailSentPage() {
                 title="Email on the way!"
                 subtitle="We’ve sent you password reset instructions. Check your spam if it doesn’t show up soon"
             />
-            <EmailSentForm resendMail={resendMail} />
+            <Suspense fallback={null}>
+                <EmailSentForm resendMail={resendMail} />
+            </Suspense>
             <AuthFooter label="Didn’t receive the email?" linkLabel="Resend" href="#" clickHandler={() => setResendMail(true)} />
         </div>
     );

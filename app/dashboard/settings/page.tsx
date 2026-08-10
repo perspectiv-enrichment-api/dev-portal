@@ -10,28 +10,8 @@ import { Moon, Monitor, Sun } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
-
-function Section({
-  label,
-  description,
-  children,
-}: {
-  label: string
-  description?: string
-  children: React.ReactNode
-}) {
-  return (
-    <div className="flex items-start gap-8 px-8 py-8 border-b-2 border-neutral-100 mx-8 last:border-b-0">
-      <div className="w-56 shrink-0">
-        <p className="text-sm font-semibold text-neutral-900">{label}</p>
-        {description && (
-          <p className="text-sm text-neutral-500 mt-0.5">{description}</p>
-        )}
-      </div>
-      <div className="flex-1">{children}</div>
-    </div>
-  )
-}
+import { SettingsSection as Section } from '@/components/settings-section'
+import { OrgSettings } from '@/components/org-settings'
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme()
@@ -135,6 +115,9 @@ export default function SettingsPage() {
           {saveMsg && <span className="text-sm text-neutral-500">{saveMsg}</span>}
         </div>
       </Section>
+
+      {/* Organization + team */}
+      <OrgSettings user={user} />
 
       {/* Theme */}
       <Section label="Theme" description="Customize how the application looks">

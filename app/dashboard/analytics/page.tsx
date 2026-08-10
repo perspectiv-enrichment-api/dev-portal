@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
@@ -9,8 +10,30 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { usageApi, type UsageSummary } from "@/lib/api";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  keysApi,
+  usageApi,
+  type ApiKey,
+  type UsageRecord,
+  type UsageSummary,
+} from "@/lib/api";
 import { authStore } from "@/lib/auth-store";
+import { cn } from "@/lib/utils";
 import { Download } from "lucide-react";
 import {
   CartesianGrid,
@@ -22,10 +45,25 @@ import {
   YAxis,
 } from "recharts";
 
+const HISTORY_PAGE_SIZE = 20;
+
+const ALL_KEYS = "all";
+
 export default function AnalyticsPage() {
   const [summary, setSummary] = useState<UsageSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  // Call history
+  const [logs, setLogs] = useState<UsageRecord[]>([]);
+  const [logTotal, setLogTotal] = useState(0);
+  const [logsLoading, setLogsLoading] = useState(true);
+  const [logsError, setLogsError] = useState("");
+  const [keys, setKeys] = useState<ApiKey[]>([]);
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [keyId, setKeyId] = useState(ALL_KEYS);
+  const [logPage, setLogPage] = useState(1);
 
   useEffect(() => {
     authStore.token()
@@ -34,6 +72,44 @@ export default function AnalyticsPage() {
       .catch(() => setError("Failed to load analytics"))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    authStore.token()
+      .then((token) => keysApi.list(token))
+      .then((res) => setKeys(res.keys))
+      .catch(() => setKeys([]));
+  }, []);
+
+  const fetchLogs = useCallback(async () => {
+    setLogsLoading(true);
+    setLogsError("");
+    try {
+      const token = await authStore.token();
+      const res = await usageApi.list(token, {
+        page: logPage,
+        limit: HISTORY_PAGE_SIZE,
+        ...(from ? { from } : {}),
+        ...(to ? { to } : {}),
+        ...(keyId !== ALL_KEYS ? { key_id: keyId } : {}),
+      });
+      setLogs(res.logs ?? []);
+      setLogTotal(res.total ?? 0);
+    } catch (err: unknown) {
+      setLogs([]);
+      setLogTotal(0);
+      setLogsError(
+        err instanceof Error ? err.message : "Failed to load call history",
+      );
+    } finally {
+      setLogsLoading(false);
+    }
+  }, [logPage, from, to, keyId]);
+
+  useEffect(() => {
+    fetchLogs();
+  }, [fetchLogs]);
+
+  const logTotalPages = Math.max(1, Math.ceil(logTotal / HISTORY_PAGE_SIZE));
 
   if (loading) {
     return (
@@ -121,6 +197,149 @@ export default function AnalyticsPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Call history */}
+      <Card className="bg-card/50 backdrop-blur border-border">
+        <CardHeader>
+          <CardTitle>Call History</CardTitle>
+          <CardDescription>Individual enrichment requests</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Filters */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-muted-foreground">
+                From
+              </label>
+              <Input
+                type="date"
+                value={from}
+                onChange={(e) => {
+                  setFrom(e.target.value);
+                  setLogPage(1);
+                }}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-muted-foreground">
+                To
+              </label>
+              <Input
+                type="date"
+                value={to}
+                onChange={(e) => {
+                  setTo(e.target.value);
+                  setLogPage(1);
+                }}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-muted-foreground">
+                API key
+              </label>
+              <Select
+                value={keyId}
+                onValueChange={(v) => {
+                  setKeyId(v);
+                  setLogPage(1);
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL_KEYS}>All keys</SelectItem>
+                  {keys.map((k) => (
+                    <SelectItem key={k.id} value={k.id}>
+                      {k.label} ({k.key_prefix}…)
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="border border-border rounded-lg overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-xs">Time</TableHead>
+                  <TableHead className="text-xs">Merchant</TableHead>
+                  <TableHead className="text-xs">Status</TableHead>
+                  <TableHead className="text-xs">Latency</TableHead>
+                  <TableHead className="text-xs">Country</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {logs.map((log) => (
+                  <TableRow key={log.id}>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {new Date(log.created_at).toLocaleString()}
+                    </TableCell>
+                    <TableCell className="text-sm font-medium">
+                      {log.merchant_name || "—"}
+                    </TableCell>
+                    <TableCell>
+                      <span
+                        className={cn(
+                          "text-xs font-medium px-2 py-0.5 rounded",
+                          log.status_code >= 200 && log.status_code < 300
+                            ? "text-emerald-600 bg-emerald-50"
+                            : "text-destructive bg-destructive/10",
+                        )}
+                      >
+                        {log.status_code}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {log.latency_ms}ms
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {log.country || "—"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {logs.length === 0 && (
+                  <TableRow>
+                    <TableCell
+                      colSpan={5}
+                      className="py-10 text-center text-sm text-muted-foreground"
+                    >
+                      {logsLoading
+                        ? "Loading…"
+                        : logsError || "No calls in this range"}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+
+            <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={logPage <= 1 || logsLoading}
+                  onClick={() => setLogPage((p) => Math.max(1, p - 1))}
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={logPage >= logTotalPages || logsLoading}
+                  onClick={() => setLogPage((p) => p + 1)}
+                >
+                  Next
+                </Button>
+              </div>
+              <span className="text-xs text-muted-foreground font-semibold">
+                Page {logPage} of {logTotalPages}
+              </span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

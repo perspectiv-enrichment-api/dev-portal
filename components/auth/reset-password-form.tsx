@@ -1,34 +1,78 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
+import { authApi } from "@/lib/api";
 
 export const ResetPasswordForm = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const resetToken = searchParams.get("token") ?? "";
+
   const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const hasMinLength = password.length >= 8;
   const hasSpecialChar = /[^a-zA-Z0-9]/.test(password);
+  const canSubmit = hasMinLength && hasSpecialChar && password === confirm;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canSubmit || loading) return;
+    if (!resetToken) {
+      setError("This reset link is invalid or has expired.");
+      return;
+    }
+    setError("");
+    setLoading(true);
+    try {
+      await authApi.resetPassword({ token: resetToken, password });
+      router.push("/auth/password-changed");
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error ? err.message : "Could not reset your password",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <form className="flex w-full flex-col gap-5">
+    <form className="flex w-full flex-col gap-5" onSubmit={handleSubmit}>
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium">New password</label>
           <Input
             type="password"
             placeholder="••••••••"
+            value={password}
             onChange={(e) => setPassword(e.target.value)}
+            required
           />
         </div>
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium">Confirm new password</label>
-          <Input type="password" placeholder="••••••••" />
+          <Input
+            type="password"
+            placeholder="••••••••"
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            required
+          />
         </div>
       </div>
       <div className="flex flex-col gap-1.5">
         {[
           { met: hasMinLength, label: "Must be at least 8 characters" },
           { met: hasSpecialChar, label: "Must contain one special character" },
+          {
+            met: confirm.length > 0 && password === confirm,
+            label: "Both passwords must match",
+          },
         ].map(({ met, label }) => (
           <div key={label} className="flex items-center gap-2">
             <div className="flex size-4 items-center justify-center rounded-full border border-gray-300">
@@ -53,14 +97,17 @@ export const ResetPasswordForm = () => {
         ))}
       </div>
 
+      {error && <p className="text-sm text-destructive">{error}</p>}
+
       <div className="flex flex-col gap-3">
         <Button
           type="submit"
           variant="default"
           size="default"
           className="w-full"
+          disabled={loading || !canSubmit}
         >
-          Reset Password
+          {loading ? "Resetting…" : "Reset Password"}
         </Button>
       </div>
     </form>

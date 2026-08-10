@@ -105,7 +105,7 @@ function SelectItem({
   icon: Icon,
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Item> & {
-  icon?: FC<{ className?: string }> | ReactNode
+  icon?: FC<{ className?: string; style?: React.CSSProperties }> | ReactNode
 }) {
   return (
     <SelectPrimitive.Item
