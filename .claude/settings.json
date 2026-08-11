@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -sL -A \"facebookexternalhit/1.1\" https://www.perspectiv.live)",
+      "Bash(curl -s -o /dev/null -w \"status=%{http_code} type=%{content_type} bytes=%{size_download}\\\\n\" https://www.perspectiv.live/open_graph_image.png)",
+      "Bash(curl -sL https://www.perspectiv.live)",
+      "Bash(curl -sSI https://www.perspectiv.live)",
+      "Bash(curl -sSI https://www.perspectiv.live/open_graph_image.png)"
+    ]
+  }
+}
