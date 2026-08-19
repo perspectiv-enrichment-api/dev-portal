@@ -22,3 +22,23 @@ export const TAG_OPTIONS = [
   { value: "travel", label: "Travel" },
   { value: "gaming", label: "Gaming" },
 ];
+
+const LOGO_CDN = (
+  process.env.NEXT_PUBLIC_LOGO_CDN ??
+  "https://cdn.jsdelivr.net/gh/perspectiv-enrichment-api/merchant-logo-cdn/merchant_logos/"
+).replace(/\/+$/, "");
+
+/**
+ * Merchant images come in two shapes: seeded rows store a bare filename
+ * (`adobe.png`) served from the shared logo CDN, while anything uploaded
+ * through the storage flow stores an absolute URL. Resolve either into a src
+ * an `<img>` can load.
+ */
+export function merchantLogoUrl(
+  value: string | null | undefined,
+): string | undefined {
+  if (!value) return undefined;
+  if (/^(https?:)?\/\//.test(value) || value.startsWith("data:")) return value;
+  if (value.startsWith("/")) return value;
+  return `${LOGO_CDN}/${value}`;
+}

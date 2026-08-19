@@ -52,7 +52,11 @@ import {
 } from "@/lib/api";
 import { authStore } from "@/lib/auth-store";
 import { countries } from "@/lib/countries";
-import { STATUS_LABELS, STATUS_STYLES } from "@/lib/merchant-meta";
+import {
+  merchantLogoUrl,
+  STATUS_LABELS,
+  STATUS_STYLES,
+} from "@/lib/merchant-meta";
 
 const countryName = (code?: string | null) =>
   countries.find((c) => c.code === code)?.name ?? code ?? "—";
@@ -351,7 +355,7 @@ export default function MerchantDetailPage() {
           </Link>
           <ProjectLogo
             name={merchant.name}
-            logo={merchant.merchant_logo ?? undefined}
+            logo={merchantLogoUrl(merchant.merchant_logo)}
             size="sm"
           />
           <h1 className="text-xl font-semibold text-neutral-900 truncate">
@@ -451,7 +455,7 @@ export default function MerchantDetailPage() {
                       /* eslint-disable-next-line @next/next/no-img-element */
                       <img
                         key={url}
-                        src={url}
+                        src={merchantLogoUrl(url)}
                         alt="Alternate logo"
                         className="w-8 h-8 rounded border border-neutral-200 object-contain"
                       />
@@ -465,7 +469,7 @@ export default function MerchantDetailPage() {
                 {merchant.category_icon ? (
                   /* eslint-disable-next-line @next/next/no-img-element */
                   <img
-                    src={merchant.category_icon}
+                    src={merchantLogoUrl(merchant.category_icon)}
                     alt="Category icon"
                     className="w-8 h-8 rounded border border-neutral-200 object-contain"
                   />

@@ -511,11 +511,11 @@ export const merchantsApi = {
       const { mockGetMerchant } = await import("./mock-merchants");
       return mockGetMerchant(merchantId);
     }
-    const res = await request<{ data: MerchantDetail }>(
+    const res = await request<{ data: { merchant: MerchantDetail } }>(
       `/v1/merchants/${merchantId}`,
       { token },
     );
-    return res.data;
+    return res.data.merchant;
   },
 
   create: async (
@@ -526,12 +526,11 @@ export const merchantsApi = {
       const { mockCreateMerchant } = await import("./mock-merchants");
       return mockCreateMerchant(body);
     }
-    const res = await request<{ data: Merchant }>("/v1/merchants", {
-      method: "POST",
-      token,
-      body: JSON.stringify(body),
-    });
-    return res.data;
+    const res = await request<{ data: { merchant: Merchant } }>(
+      "/v1/merchants",
+      { method: "POST", token, body: JSON.stringify(body) },
+    );
+    return res.data.merchant;
   },
 
   update: async (
@@ -543,11 +542,11 @@ export const merchantsApi = {
       const { mockUpdateMerchant } = await import("./mock-merchants");
       return mockUpdateMerchant(merchantId, body);
     }
-    const res = await request<{ data: Merchant }>(
+    const res = await request<{ data: { merchant: Merchant } }>(
       `/v1/merchants/${merchantId}`,
       { method: "PATCH", token, body: JSON.stringify(body) },
     );
-    return res.data;
+    return res.data.merchant;
   },
 
   /**
@@ -605,11 +604,11 @@ export const merchantsApi = {
       const { mockChangeAliases } = await import("./mock-merchants");
       return mockChangeAliases(merchantId, aliases, "add");
     }
-    const res = await request<{ data: { aliases: string[] } }>(
+    const res = await request<{ data: { merchant: Merchant } }>(
       `/v1/merchants/${merchantId}/aliases`,
       { method: "POST", token, body: JSON.stringify({ aliases }) },
     );
-    return res.data.aliases;
+    return res.data.merchant.aliases;
   },
 
   removeAliases: async (
@@ -621,11 +620,11 @@ export const merchantsApi = {
       const { mockChangeAliases } = await import("./mock-merchants");
       return mockChangeAliases(merchantId, aliases, "remove");
     }
-    const res = await request<{ data: { aliases: string[] } }>(
+    const res = await request<{ data: { merchant: Merchant } }>(
       `/v1/merchants/${merchantId}/aliases`,
       { method: "DELETE", token, body: JSON.stringify({ aliases }) },
     );
-    return res.data.aliases;
+    return res.data.merchant.aliases;
   },
 };
 
@@ -653,11 +652,11 @@ export const branchesApi = {
       const { mockCreateBranch } = await import("./mock-merchants");
       return mockCreateBranch(merchantId, body);
     }
-    const res = await request<{ data: Branch }>(
+    const res = await request<{ data: { branch: Branch } }>(
       `/v1/merchants/${merchantId}/branches`,
       { method: "POST", token, body: JSON.stringify(body) },
     );
-    return res.data;
+    return res.data.branch;
   },
 
   update: async (
@@ -670,11 +669,11 @@ export const branchesApi = {
       const { mockUpdateBranch } = await import("./mock-merchants");
       return mockUpdateBranch(merchantId, branchId, body);
     }
-    const res = await request<{ data: Branch }>(
+    const res = await request<{ data: { branch: Branch } }>(
       `/v1/merchants/${merchantId}/branches/${branchId}`,
       { method: "PATCH", token, body: JSON.stringify(body) },
     );
-    return res.data;
+    return res.data.branch;
   },
 
   delete: async (

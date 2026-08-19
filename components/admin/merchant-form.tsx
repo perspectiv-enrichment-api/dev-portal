@@ -28,7 +28,7 @@ import {
 } from "@/lib/api";
 import { authStore } from "@/lib/auth-store";
 import { countries } from "@/lib/countries";
-import { TAG_OPTIONS } from "@/lib/merchant-meta";
+import { merchantLogoUrl, TAG_OPTIONS } from "@/lib/merchant-meta";
 
 const MAX_IMAGE_BYTES = 1024 * 1024;
 const IMAGE_ACCEPT = MERCHANT_IMAGE_TYPES.join(",");
@@ -42,7 +42,7 @@ type ImageValue =
   | { kind: "new"; file: File; dataUrl: string; fileName: string };
 
 const previewSrc = (img: ImageValue) =>
-  img.kind === "existing" ? img.url : img.dataUrl;
+  img.kind === "existing" ? merchantLogoUrl(img.url) : img.dataUrl;
 
 const previewLabel = (img: ImageValue) =>
   img.kind === "existing"

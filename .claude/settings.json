@@ -5,7 +5,23 @@
       "Bash(curl -s -o /dev/null -w \"status=%{http_code} type=%{content_type} bytes=%{size_download}\\\\n\" https://www.perspectiv.live/open_graph_image.png)",
       "Bash(curl -sL https://www.perspectiv.live)",
       "Bash(curl -sSI https://www.perspectiv.live)",
-      "Bash(curl -sSI https://www.perspectiv.live/open_graph_image.png)"
+      "Bash(curl -sSI https://www.perspectiv.live/open_graph_image.png)",
+      "Bash(rm -rf /var/www/ui-apps/dev-portal/.next && echo \"cleared\")",
+      "Bash(sudo -n rm -rf /var/www/ui-apps/dev-portal/.next)",
+      "Read(//etc/nginx/sites-available/**)",
+      "Bash(systemctl is-active *)",
+      "Bash(curl -sS --max-time 8 -o /tmp/claude-1002/-var-www-ui-apps-dev-portal/082b3982-7d86-4459-943d-b9b327605b75/scratchpad/storage-root.txt -w \"status=%{http_code} ct=%{content_type}\\\\n\" https://storage.perspectiv.live/)",
+      "Bash(curl -sS --max-time 5 -o /dev/null -w \"status=%{http_code}\\\\n\" http://127.0.0.1:9000/minio/health/live)",
+      "Bash(sed -n '108,150p' /etc/nginx/sites-enabled/dev-portal)",
+      "Bash(curl -sS --max-time 8 -X OPTIONS -D - -o /dev/null -H 'Origin: https://perspectiv.live' -H 'Access-Control-Request-Method: PUT' -H 'Access-Control-Request-Headers: content-type' https://storage.perspectiv.live/test/probe.png)",
+      "Bash(sed -n '150,185p' /etc/nginx/sites-enabled/dev-portal)",
+      "Bash(pm2 list *)",
+      "Bash(curl -sS --max-time 5 -o /dev/null -w \"console :9001 status=%{http_code}\\\\n\" http://127.0.0.1:9001/)",
+      "Bash(curl -sS --max-time 5 http://127.0.0.1:9001/)",
+      "Read(//etc/default/**)"
+    ],
+    "additionalDirectories": [
+      "/var/www/ui-apps/dev-portal/.next"
     ]
   }
 }

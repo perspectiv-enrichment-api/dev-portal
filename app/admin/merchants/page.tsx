@@ -31,6 +31,7 @@ import { authStore } from "@/lib/auth-store";
 import { ProjectLogo } from "@/components/project-logo";
 import { countries } from "@/lib/countries";
 import {
+  merchantLogoUrl,
   STATUS_LABELS,
   STATUS_STYLES,
   TAG_OPTIONS,
@@ -344,7 +345,7 @@ export default function MerchantsPage() {
                       <div className="flex items-center gap-3">
                         <ProjectLogo
                           name={merchant.name}
-                          logo={merchant.merchant_logo ?? undefined}
+                          logo={merchantLogoUrl(merchant.merchant_logo)}
                           size="sm"
                         />
                         <span className="text-sm font-medium text-neutral-900">
