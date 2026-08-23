@@ -13,11 +13,21 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import Image from "next/image";
 import { Trash2, Pencil, Search, ListFilter, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDashboard } from "./dashboard-context";
-import { projectsApi } from "@/lib/api";
+import { projectsApi, type Project } from "@/lib/api";
 import { authStore } from "@/lib/auth-store";
 import { CreateProjectDialog } from "@/components/create-project-dialog";
 
@@ -25,6 +35,7 @@ const PAGE_SIZE = 10;
 
 export default function DashboardPage() {
   const [search, setSearch] = useState("");
+  const [deletingProject, setDeletingProject] = useState<Project | null>(null);
   const { projects, loadingProjects, refreshProjects, dialogOpen, setDialogOpen } = useDashboard();
   const router = useRouter();
 
@@ -32,13 +43,16 @@ export default function DashboardPage() {
     p.name.toLowerCase().includes(search.toLowerCase()),
   );
 
-  async function handleDelete(e: React.MouseEvent, projectId: string) {
-    e.stopPropagation();
+  async function handleDelete() {
+    if (!deletingProject) return;
     try {
       const token = await authStore.token();
-      await projectsApi.delete(token, projectId);
+      await projectsApi.delete(token, deletingProject.id);
       refreshProjects();
-    } catch {}
+    } catch {
+    } finally {
+      setDeletingProject(null);
+    }
   }
 
   if (loadingProjects) {
@@ -151,7 +165,11 @@ export default function DashboardPage() {
                       <div className="flex items-center gap-2 justify-end">
                         <button
                           className="text-neutral-400 hover:text-red-500 transition-colors"
-                          onClick={(e) => handleDelete(e, project.id)}
+                          aria-label={`Delete ${project.name}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeletingProject(project);
+                          }}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -181,6 +199,31 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+
+      {/* Delete project */}
+      <AlertDialog
+        open={!!deletingProject}
+        onOpenChange={(open) => !open && setDeletingProject(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete project?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deletingProject?.name} will be permanently removed, along with
+              its API keys and usage history. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-white hover:bg-destructive/90"
+            >
+              Delete project
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

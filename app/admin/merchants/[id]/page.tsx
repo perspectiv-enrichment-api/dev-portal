@@ -61,7 +61,29 @@ import {
 const countryName = (code?: string | null) =>
   countries.find((c) => c.code === code)?.name ?? code ?? "—";
 
-function Row({
+function Section({
+  label,
+  description,
+  children,
+}: {
+  label: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-start gap-8 px-6 py-6 border-b border-neutral-100 last:border-b-0">
+      <div className="w-48 shrink-0">
+        <p className="text-sm font-semibold text-neutral-900">{label}</p>
+        {description && (
+          <p className="text-sm text-neutral-500 mt-0.5">{description}</p>
+        )}
+      </div>
+      <div className="flex-1 min-w-0">{children}</div>
+    </div>
+  );
+}
+
+function Field({
   label,
   children,
 }: {
@@ -69,12 +91,37 @@ function Row({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex items-start gap-4 py-3 border-b border-neutral-100 last:border-b-0">
-      <span className="w-48 shrink-0 text-sm text-neutral-500">{label}</span>
-      <span className="flex-1 text-sm text-neutral-900 break-words">
-        {children}
-      </span>
+    <div className="flex flex-col gap-1">
+      <span className="text-xs font-medium text-neutral-500">{label}</span>
+      <span className="text-sm text-neutral-900 break-words">{children}</span>
     </div>
+  );
+}
+
+function LogoThumb({
+  src,
+  alt,
+  onView,
+  className,
+}: {
+  src: string;
+  alt: string;
+  onView: () => void;
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onView}
+      aria-label={`View ${alt}`}
+      className={cn(
+        "rounded border border-neutral-200 overflow-hidden cursor-zoom-in transition hover:ring-2 hover:ring-neutral-300",
+        className,
+      )}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={src} alt={alt} className="w-full h-full object-contain" />
+    </button>
   );
 }
 
@@ -220,6 +267,9 @@ export default function MerchantDetailPage() {
   const [editingBranch, setEditingBranch] = useState<Branch | null>(null);
   const [deletingBranch, setDeletingBranch] = useState<Branch | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [preview, setPreview] = useState<{ src: string; alt: string } | null>(
+    null,
+  );
 
   const load = useCallback(async () => {
     try {
@@ -353,11 +403,27 @@ export default function MerchantDetailPage() {
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <ProjectLogo
-            name={merchant.name}
-            logo={merchantLogoUrl(merchant.merchant_logo)}
-            size="sm"
-          />
+          {merchant.merchant_logo ? (
+            <button
+              type="button"
+              onClick={() =>
+                setPreview({
+                  src: merchantLogoUrl(merchant.merchant_logo)!,
+                  alt: merchant.name,
+                })
+              }
+              aria-label={`View ${merchant.name} logo`}
+              className="rounded-full cursor-zoom-in transition hover:ring-2 hover:ring-neutral-300 shrink-0"
+            >
+              <ProjectLogo
+                name={merchant.name}
+                logo={merchantLogoUrl(merchant.merchant_logo)}
+                size="sm"
+              />
+            </button>
+          ) : (
+            <ProjectLogo name={merchant.name} size="sm" />
+          )}
           <h1 className="text-xl font-semibold text-neutral-900 truncate">
             {merchant.name}
           </h1>
@@ -401,96 +467,177 @@ export default function MerchantDetailPage() {
 
           {/* Overview */}
           <TabsContent value="overview" className="mt-6">
-            <div className="border border-neutral-200 rounded-lg px-5 py-2 max-w-3xl">
-              <Row label="Description">{merchant.description || "—"}</Row>
-              <Row label="Industry group">{merchant.industry_group || "—"}</Row>
-              <Row label="MCC">
-                {merchant.mcc}
-                {merchant.mcc_description
-                  ? ` — ${merchant.mcc_description}`
-                  : ""}
-              </Row>
-              <Row label="Tags">
-                {merchant.tags?.length ? merchant.tags.join(", ") : "—"}
-              </Row>
-              <Row label="Website">
-                {merchant.website ? (
-                  <a
-                    href={merchant.website}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-blue-600 hover:underline"
-                  >
-                    {merchant.website}
-                  </a>
-                ) : (
-                  "—"
-                )}
-              </Row>
-              <Row label="Email">{merchant.email || "—"}</Row>
-              <Row label="Phone">{merchant.phone || "—"}</Row>
-              <Row label="Headquarters">{merchant.headquarters || "—"}</Row>
-              <Row label="Country">{countryName(merchant.country)}</Row>
-              <Row label="Founded">{merchant.founded_year || "—"}</Row>
-              <Row label="Brand colors">
-                {merchant.brand_colors?.length ? (
-                  <span className="flex items-center gap-1.5">
-                    {merchant.brand_colors.map((c) => (
-                      <span
-                        key={c}
-                        className="w-5 h-5 rounded-full border border-neutral-200"
-                        style={{ backgroundColor: c }}
-                        title={c}
+            <div className="border border-neutral-200 rounded-lg bg-white max-w-3xl">
+              <Section
+                label="Identity"
+                description="Logo and description shown across the catalog."
+              >
+                <div className="flex items-start gap-5">
+                  {merchant.merchant_logo ? (
+                    <LogoThumb
+                      src={merchantLogoUrl(merchant.merchant_logo)!}
+                      alt={`${merchant.name} logo`}
+                      onView={() =>
+                        setPreview({
+                          src: merchantLogoUrl(merchant.merchant_logo)!,
+                          alt: merchant.name,
+                        })
+                      }
+                      className="w-20 h-20 shrink-0 bg-white"
+                    />
+                  ) : (
+                    <div className="w-20 h-20 shrink-0 rounded border border-dashed border-neutral-200 flex items-center justify-center text-xs text-neutral-400">
+                      No logo
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0 flex flex-col gap-3">
+                    <Field label="Description">
+                      {merchant.description || "—"}
+                    </Field>
+                    <Field label="Tags">
+                      {merchant.tags?.length ? merchant.tags.join(", ") : "—"}
+                    </Field>
+                  </div>
+                </div>
+              </Section>
+
+              <Section
+                label="Business info"
+                description="Contact and location details."
+              >
+                <div className="grid grid-cols-2 gap-4">
+                  <Field label="Website">
+                    {merchant.website ? (
+                      <a
+                        href={merchant.website}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-blue-600 hover:underline"
+                      >
+                        {merchant.website}
+                      </a>
+                    ) : (
+                      "—"
+                    )}
+                  </Field>
+                  <Field label="Email">{merchant.email || "—"}</Field>
+                  <Field label="Phone">{merchant.phone || "—"}</Field>
+                  <Field label="Headquarters">
+                    {merchant.headquarters || "—"}
+                  </Field>
+                  <Field label="Country">
+                    {countryName(merchant.country)}
+                  </Field>
+                  <Field label="Founded">{merchant.founded_year || "—"}</Field>
+                </div>
+              </Section>
+
+              <Section
+                label="Classification"
+                description="Industry and merchant category."
+              >
+                <div className="grid grid-cols-2 gap-4">
+                  <Field label="Industry group">
+                    {merchant.industry_group || "—"}
+                  </Field>
+                  <Field label="MCC">
+                    {merchant.mcc}
+                    {merchant.mcc_description
+                      ? ` — ${merchant.mcc_description}`
+                      : ""}
+                  </Field>
+                </div>
+              </Section>
+
+              <Section
+                label="Branding"
+                description="Alternate marks recognized for this merchant."
+              >
+                <div className="flex flex-col gap-4">
+                  <Field label="Brand colors">
+                    {merchant.brand_colors?.length ? (
+                      <span className="flex items-center gap-1.5">
+                        {merchant.brand_colors.map((c) => (
+                          <span
+                            key={c}
+                            className="w-5 h-5 rounded-full border border-neutral-200"
+                            style={{ backgroundColor: c }}
+                            title={c}
+                          />
+                        ))}
+                      </span>
+                    ) : (
+                      "—"
+                    )}
+                  </Field>
+                  <Field label="Alternate logos">
+                    {merchant.alternate_logos?.length ? (
+                      <span className="flex items-center gap-2">
+                        {merchant.alternate_logos.map((url) => (
+                          <LogoThumb
+                            key={url}
+                            src={merchantLogoUrl(url)!}
+                            alt={`${merchant.name} alternate logo`}
+                            onView={() =>
+                              setPreview({
+                                src: merchantLogoUrl(url)!,
+                                alt: `${merchant.name} alternate logo`,
+                              })
+                            }
+                            className="w-10 h-10 bg-white"
+                          />
+                        ))}
+                      </span>
+                    ) : (
+                      "—"
+                    )}
+                  </Field>
+                  <Field label="Category icon">
+                    {merchant.category_icon ? (
+                      <LogoThumb
+                        src={merchantLogoUrl(merchant.category_icon)!}
+                        alt={`${merchant.name} category icon`}
+                        onView={() =>
+                          setPreview({
+                            src: merchantLogoUrl(merchant.category_icon)!,
+                            alt: `${merchant.name} category icon`,
+                          })
+                        }
+                        className="w-10 h-10 bg-white"
                       />
-                    ))}
-                  </span>
-                ) : (
-                  "—"
-                )}
-              </Row>
-              <Row label="Alternate logos">
-                {merchant.alternate_logos?.length ? (
-                  <span className="flex items-center gap-2">
-                    {merchant.alternate_logos.map((url) => (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img
-                        key={url}
-                        src={merchantLogoUrl(url)}
-                        alt="Alternate logo"
-                        className="w-8 h-8 rounded border border-neutral-200 object-contain"
-                      />
-                    ))}
-                  </span>
-                ) : (
-                  "—"
-                )}
-              </Row>
-              <Row label="Category icon">
-                {merchant.category_icon ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
-                    src={merchantLogoUrl(merchant.category_icon)}
-                    alt="Category icon"
-                    className="w-8 h-8 rounded border border-neutral-200 object-contain"
-                  />
-                ) : (
-                  "—"
-                )}
-              </Row>
-              <Row label="Recognition confidence">
-                {merchant.recognition_confidence != null
-                  ? `${merchant.recognition_confidence}%`
-                  : "—"}
-              </Row>
-              <Row label="Source">{merchant.source || "—"}</Row>
-              <Row label="Internal notes">{merchant.internal_notes || "—"}</Row>
-              <Row label="Added on">
-                {new Date(merchant.created_at).toLocaleDateString("en-US", {
-                  month: "long",
-                  day: "2-digit",
-                  year: "numeric",
-                })}
-              </Row>
+                    ) : (
+                      "—"
+                    )}
+                  </Field>
+                </div>
+              </Section>
+
+              <Section
+                label="Recognition"
+                description="Matching confidence and internal metadata."
+              >
+                <div className="grid grid-cols-2 gap-4">
+                  <Field label="Recognition confidence">
+                    {merchant.recognition_confidence != null
+                      ? `${merchant.recognition_confidence}%`
+                      : "—"}
+                  </Field>
+                  <Field label="Source">{merchant.source || "—"}</Field>
+                  <Field label="Internal notes">
+                    {merchant.internal_notes || "—"}
+                  </Field>
+                  <Field label="Added on">
+                    {new Date(merchant.created_at).toLocaleDateString(
+                      "en-US",
+                      {
+                        month: "long",
+                        day: "2-digit",
+                        year: "numeric",
+                      },
+                    )}
+                  </Field>
+                </div>
+              </Section>
             </div>
           </TabsContent>
 
@@ -673,6 +820,26 @@ export default function MerchantDetailPage() {
         branch={editingBranch}
         onSave={handleSaveBranch}
       />
+
+      {/* Logo preview */}
+      <Dialog
+        open={!!preview}
+        onOpenChange={(open) => !open && setPreview(null)}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{preview?.alt}</DialogTitle>
+          </DialogHeader>
+          {preview && (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={preview.src}
+              alt={preview.alt}
+              className="w-full max-h-[60vh] object-contain rounded-md bg-neutral-50"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Delete branch */}
       <AlertDialog
